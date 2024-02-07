@@ -644,6 +644,12 @@ coef_elastic %>% rownames_to_column() %>%
 Por otro lado, para corroborar los supuestos de regresión lineal se realizaron los siguientes dos gráficos: en el primero se ven los residuos versus los valores ajustados (@fig-res-ajus), y en el segundo un QQ-plot de los residuos (@fig-qqplot). Como se puede notar de los mismos no se percibe una estructura en los residuos que pueda indicar un problema con el modelo, y además los residuos parecen cumplir el supuesto de normalidad (no se ven colas pesadas que nos alertasen de posibles *outliers*). Por lo tanto, concluimos que por el análisis gráfico, pareciera que el modelo propuesto cumple los supuestos de regresión lineal.
 
 ```{r}
+test_res <- test %>% mutate(
+  preds_mod_4 = predict(elastic_model, as.matrix(test[,-1])),
+  res_mod_4 = comp_6 - preds_mod_4)
+```
+
+```{r}
 #| label: fig-res-ajus
 #| fig-cap: Valores ajustados versus resudiuos en muestra de validación
 #| echo: false
@@ -673,12 +679,6 @@ test_res %>% ggplot(aes(sample=res_mod_4)) +
 ```
 
 # Conclusión {#sec-conclusiones}
-
-```{r}
-test_res <- test %>% mutate(
-  preds_mod_4 = predict(elastic_model, as.matrix(test[,-1])),
-  res_mod_4 = comp_6 - preds_mod_4)
-```
 
 El modelo que mejor capacidad predictiva tiene para nuestro objetivo de predecir el componente $SO_3$ presente en las vasijas, y sujeto a los datos con los que contamos, es el modelo ajustado *Elastic Net*. El error de predicción (MSE) estimado en la muestra de testeo es `r round(sqrt(mean((test_res$preds_mod_4-test_res$comp_6)^2)), 5)`. Cabe mencionar que esta estimación final del error fue hecha con datos que el modelo no utilizó para su ajuste ni para la comparación entre los otros modelos probados, ya que esas fueron hechas con los datos de entrenamiento y la técnica de validación cruzada para las estimaciones de los errores de cada modelo en dichos datos.
 
