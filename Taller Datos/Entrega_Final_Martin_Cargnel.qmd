@@ -15,8 +15,8 @@ pacman::p_load(dplyr, ggplot2, rsample, caret, RColorBrewer, knitr, glmnet, pls,
 seed <- 1234
 doParallel::registerDoParallel()
 setwd("~/MEM/Taller datos/TP Final")
-vessel_x <- read.table("Vessel_X.txt",sep=",")
-vessel_y <- read.table("Vessel_Y.txt",sep=",")
+vessel_x <- read.table("datos/Vessel_X.txt",sep=",")
+vessel_y <- read.table("datos/Vessel_Y.txt",sep=",")
 df <- cbind(vessel_y[,6],vessel_x)
 names(df)[1] <- "comp_6"
 ```
