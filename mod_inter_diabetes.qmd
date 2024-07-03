@@ -1,0 +1,452 @@
+---
+title: "Idea de tesis"
+author: "Martín Gabriel Cargnel"
+format:
+  pdf:
+    number-sections: false
+lang: es    
+execute:
+  include: true
+  fig-align: center
+pdf-engine: pdflatex
+---
+
+# Resumen
+
+Me interesa estudiar alternativas al modelo lineal cuando se busca explicar el efecto de distintas covariables en la variable de respuesta. La motivación surge de que los modelos lineales suelen ser la principal elección cuando se busca interpretabilidad, dado que muchos modelos de aprendizaje automático se consideran cajas negras. Es decir, que tienen mucha flexibilidad y poder predictivo pero son difíciles de interpretar por su complejidad. Sin embargo, existen técnicas de aprendizaje automático interpretable que permiten entender cómo el modelo utiliza las covariables.
+
+Idealmente me gustaría encontrar técnicas que den siginificatividad estadística a modelos de aprendizaje automático y testearlas sobre un conjunto de datos para comparar sus resultados con el modelo lineal.
+
+# Organización
+
+-   Introducción
+-   Predecir ó interpretar: diferencias entre ambos objetivos y los modelos más utilizados en cada caso.
+-   Modelo lineal, supuestos y limitaciones: por qué es tan usado y algunas de sus limitaciones.
+-   Árboles y ensambles: explicar el algoritmo para crear árboles de decisión, luego bagging para terminar con Random Forest.
+-   Aprendizaje automático interpretable: un repaso de estas técnicas, sobre todo para modelos de árboles y cómo se puede obtener información similar a la que aporta un modelo lineal. A priori mencionaría importancias, PDP.
+-   Aplicación: Comparar modelos lineales vs. Random Forest con técnicas de aprendizaje automático interpretable.
+-   Discusión y futuros trabajos.
+-   Conclusiones
+
+{{< pagebreak >}} 
+
+# Ejemplo básico de aplicación
+
+La idea de este ejemplo es comparar un ajuste lineal con un Random Forest combinado con técnicas de aprendizaje automático interpretable. Por lo que utilicé los [datos de Diabetes](https://github.com/scikit-learn/scikit-learn/blob/main/sklearn/datasets/descr/diabetes.rst), con el objetivo de entender el efecto de distintas variables en la progresión de la diabetes. El dataset cuenta con 442 observaciones y 12 variables, sin datos faltantes.
+
+## Análisis exploratorio
+
+```{r}
+#| label: setup
+#| include: false
+
+pacman::p_load(dplyr, car, tidyr, randomForest, rsample,
+               Metrics, reshape2, ggplot2, iml, readr,
+               reshape2, knitr)
+seed <- 73815
+color = "#173f63de"
+```
+
+En primer lugar importo los datos y describo las variables en la siguiente tabla.
+
+```{r}
+df_diabetes = read_csv("diabetes2.csv", show_col_types = FALSE)
+```
+
+| Variable | Descripción                                       |
+|----------|---------------------------------------------------|
+| Id       | Identificador único del paciente                  |
+| AGE      | edad en años del paciente                         |
+| SEX      | Sexo del paciente                                 |
+| BMI      | Índice de masa corporal                           |
+| BP       | Presión arterial promedio                         |
+| TC       | Colesterol sérico total (s1)                      |
+| LDL      | Colesterol "malo" (s2)                            |
+| HDL      | Colesterol "bueno" (s3)                           |
+| TCH      | Colesterol total / HDL (s4)                       |
+| LTG      | logaritmo base 10 del nivel de triglicéridos (s5) |
+| GLU      | Nivel de azúcar en sangre (s6)                    |
+| Y        | Índice de progresión de la diabetes.              |
+
+En la @fig-correl se ve un heatmap con la correlación entre las variables donde notamos que TC tiene una correlación muy alta con LDL (@fig-scatter-1), también se ve que TCH y HDL tienen una correlación fuerte (@fig-scatter-2). Entiendo que esto último se debe a que TCH calculó utilizando TC y HDL. Es por eso que voy a eliminar esas variables para evitar incluir variables muy correlacionadas o calculadas en base a otras.
+
+```{r}
+#| label: fig-correl
+
+cor_matrix <- cor(df_diabetes %>% select(-c("sex", "Id")),
+                  use = "complete.obs")
+
+melted_cor_matrix <- reshape2::melt(cor_matrix)
+
+ggplot(data = melted_cor_matrix, aes(x = Var1, y = Var2, fill = value)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Correlación") +
+  geom_text(aes(label = round(value, 2)), color = "black", size = 4) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1)) +
+  labs(x="", y="")
+```
+
+```{r}
+#| label: fig-scatter
+#| fig-cap: "Scatterplots"
+#| fig-subcap: 
+#|   - "TC vs LDL"
+#|   - "HDL vs TCH"
+#| layout-ncol: 2
+
+
+df_diabetes %>% ggplot(aes(x=tc, y=ldl)) +
+  geom_point(color=color) +
+  labs(x ="TC", y = "LDL",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$tc, df_diabetes$ldl), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=hdl, y=tch)) +
+  geom_point(color=color) +
+  labs(x ="HDL", y = "TCH",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$hdl, df_diabetes$tch), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+También noté que la variable SEX estaba en formato numérico, por lo que fue convertida a factor, además eliminé el Id.
+
+```{r}
+df_diabetes_mf <- df_diabetes %>%
+  select(-c("Id", "tc", "tch")) %>%
+  mutate(sex = as.factor(sex))
+```
+
+Entonces, las variables a incluir en el modelo serían: AGE, SEX, BMI, BP, LDL, HDL, LTG y GLU. En la @fig-boxplot se ve que no parece haber diferencias entre las medianas de la variable dependiente para los distintos valores de SEX. Por otro lado, en la @fig-scatter-covs se ve la asociación entre las covariables y la progresión de la diabetes, donde se destacan BMI, LTG y BP como las covariables con la correlación más fuerte. Finalmente, en la @fig-hists vemos histogramas de todas las covariables numéricas.
+
+```{r}
+#| label: fig-boxplot
+#| fig-cap: "Boxplot de la edad para las dos categorías de la variable sex."
+df_diabetes_mf %>% ggplot(aes(y= y, x = sex)) +
+  geom_boxplot(fill = color) +
+  labs(title = "Boxplot de la diabetes por sexo",
+       y = "y",
+       x = "sex") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5, size = 14),
+        axis.title = element_text(size = 12),
+        axis.text = element_text(size = 10),
+        strip.text = element_text(size = 12))
+```
+
+```{r}
+#| label: fig-scatter-covs
+#| fig-cap: "Scatterplots de las covariables vs el índice de progresión de la diabetes."
+#| fig-subcap: 
+#|   - "bmi"
+#|   - "ltg"
+#|   - "bp"
+#|   - "hdl"
+#|   - "glu"
+#|   - "age"
+#|   - "ldl"
+#| layout-ncol: 2
+#| echo: false
+
+
+df_diabetes %>% ggplot(aes(x=bmi, y=y)) +
+  geom_point(color=color) +
+  labs(x ="BMI", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$bmi, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+df_diabetes %>% ggplot(aes(x=ltg, y=y)) +
+  geom_point(color=color) +
+  labs(x ="LTG", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$ltg, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=bp, y=y)) +
+  geom_point(color=color) +
+  labs(x ="BP", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$bp, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=hdl, y=y)) +
+  geom_point(color=color) +
+  labs(x ="HDL", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$hdl, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=glu, y=y)) +
+  geom_point(color=color) +
+  labs(x ="GLU", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$glu, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=age, y=y)) +
+  geom_point(color=color) +
+  labs(x ="Age", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$age, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+df_diabetes %>% ggplot(aes(x=ldl, y=y)) +
+  geom_point(color=color) +
+  labs(x ="LDL", y = "y",
+       subtitle = paste0("Corr: ",
+                         round(cor(df_diabetes$ldl, df_diabetes$y), 2))) +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+```{r}
+#| label: fig-hists
+#| fig-cap: "Scatterplots de las covariables vs el índice de progresión de la diabetes."
+
+numeric_data_long <- df_diabetes_mf %>%
+  select_if(is.numeric) %>%
+  pivot_longer(cols = everything(), names_to = "variable",
+               values_to = "value")
+
+ggplot(numeric_data_long, aes(x = value)) +
+  geom_histogram(bins = 20, fill = color, color = "white") +
+  facet_wrap(~ variable, scales = "free_x") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+Antes de ajustar los modelos, dividí los datos entre train y test, asignando el 80% de los datos al conjunto de entrenamiento y el 20% restante al de testeo.
+
+```{r}
+#| label: train-test-split
+
+set.seed(seed)
+split <- initial_split(df_diabetes_mf, prop = .8)
+
+train_data <- training(split)
+
+test_data <- testing(split)
+```
+
+{{< pagebreak >}}
+
+## Modelo lineal
+
+Ajusté un modelo lineal para predecir el índice de progresión de la diabetes con todas las covariables descritas en la sección anterior. Para el ajuste se utilizaron los datos de entrenamiento y se ve en la tabla de resumen que todos los coeficientes son significativos a excepción de AGE y GLU.
+
+```{r}
+#| label: linear-model-fit
+
+lm_fit <- lm(y ~ ., data = train_data)
+
+summary(lm_fit)$coefficients %>%
+  round(2) %>%
+  kable()
+```
+
+A modo de diagnóstico calculé el VIF del ajuste y no parece haber problemas de colinealidad en las variables, dado que todos los valores son cercanos a 1.
+
+```{r}
+vif_lm <- vif(lm_fit)
+vif_lm
+```
+
+Ahora, para entender si las covariables que no resultaron siginficativas, lo son a nivel simulatáneo uso el comando ANOVA y veo que el p-valor del test F es 0.6478, por lo que debería descartar las variables del modelo.
+
+```{r}
+lm_fit_2 <- lm(y ~ sex + bmi + bp + ldl + hdl + ltg, data = train_data)
+anova(lm_fit_2, lm_fit)
+```
+
+Al descartar estas covariables se ve que todas las covariables son significativas al 5% y las que tienen un mayor efecto en la progesión de la diabetes parecen ser LTG, SEX y BMI.
+
+```{r}
+summary(lm_fit_2)$coefficients %>%
+  round(2) %>%
+  kable()
+```
+
+Calculando el gráfico de residuos vs predichos (@fig-res) pareciera haber una cierta estructura en los residuos. Por lo que grafiqué los mismos vs. las covariables incluidas (@fig-res-covs) y no incluidas (@fig-res-covs-2) en el modelo\footnote{Me quedó pendiente hacer el mismo grafico versus las variables que excluí en el análisis exploratorio.}, aunque no encontré ninguna estructura muy marcada.
+
+```{r}
+#| label: fig-res
+#| fig-cap: Grafico de residuos vs valores ajustados del modelo lineal.
+
+resultados_modelo <- data.frame(
+  "residuos" = lm_fit_2$residuals,
+  "predichos" = lm_fit_2$fitted.values
+)
+
+resultados_modelo %>% ggplot(aes(x=predichos, y = residuos)) +
+  geom_point(color = color)+
+  theme_minimal() + 
+  labs(title = "Residuos vs predichos",
+       x= "Valores predichos",
+       y = "Residuos") + 
+  theme(plot.title = element_text(hjust = 0.5)) +
+  geom_hline(yintercept = 0, linetype = "dashed")  
+```
+
+```{r}
+#| label: fig-res-covs
+#| fig-cap: "Graficos de residuos vs las covariables incluidas en el modelo"
+#| fig-subcap: 
+#|   - ""
+#|   - ""
+#|   - ""
+#|   - ""
+#|   - ""
+#|   - ""
+#| layout-ncol: 2
+
+plot(train_data$bmi, lm_fit_2$residuals, xlab= "BMI",
+     ylab="Residuos", main="Residuos vs BMI", col = color)
+plot(train_data$bp, lm_fit_2$residuals, xlab= "BP",
+     ylab="Residuos", main="Residuos vs NP", col = color)
+plot(train_data$ldl, lm_fit_2$residuals, xlab= "LDL",
+     ylab="Residuos", main="Residuos vs LDL", col = color)
+plot(train_data$hdl, lm_fit_2$residuals, xlab= "HDL",
+     ylab="Residuos", main="Residuos vs HDL", col = color)
+plot(train_data$ltg, lm_fit_2$residuals, xlab= "LTG",
+     ylab="Residuos", main="Residuos vs LTG", col = color)
+```
+
+```{r}
+#| label: fig-res-covs-2
+#| fig-cap: "Graficos de residuos vs las covariables excluidas del modelo"
+#| fig-subcap: 
+#|   - ""
+#|   - ""
+#| layout-ncol: 2
+
+plot(train_data$glu, lm_fit_2$residuals, xlab= "GLU",
+     ylab="Residuos", main="Residuos vs GLU", col = color)
+plot(train_data$age, lm_fit_2$residuals, xlab= "Age",
+     ylab="Residuos", main="Residuos vs Age", col = color)
+
+```
+
+Finalmente, calculo el MSE en la muestra de testeo.
+
+```{r}
+preds_lm <- predict(lm_fit_2, test_data)
+
+mse_lm = mse(test_data$y, preds_lm)
+
+cat(paste("MSE del modelo lineal:", round(mse_lm, 4)))
+```
+
+{{< pagebreak >}}
+
+## Random Forest
+
+Ahora voy a ajustar un modelo Random Forest para comparar los resultados con el modelo lineal. En primer lugar ajusto con 1000 árboles $mtry=\sqrt{8}$ con la muestra de entrenamiento y calculo el MSE en la muestra de testeo.
+
+```{r}
+#| label: rf-fit
+set.seed(seed)
+
+rf_model <- randomForest(y ~ ., data = train_data, ntree = 1000,
+                         mtry = sqrt(ncol(train_data)-1))
+
+preds_rf <- predict(rf_model, test_data)
+
+mse_rf <- mse(test_data$y, preds_rf)
+
+cat(paste("MSE de Random Forest:", round(mse_rf, 4)))
+```
+
+Se ve que el MSE es menor al obtenido en el modelo lineal.
+
+Sin embargo, el objetivo no era únicamente predecir, sino también entender el efecto de cada covariable en la diabetes. Por lo que usé permutation feature importance y partial dependence plots para entender las importancias y los efectos de las covariables, respectivamente.
+
+```{r}
+predictor <- Predictor$new(rf_model, data = train_data, y = "y")
+```
+
+Para lo primero se ve en la @fig-importancias que las dos variables más importantes son LTG y BMI. A diferencia del modelo lineal, SEX tiene muy poca importancia, de todas formas esto parece ir en línea con el análisis exploratorio.
+
+```{r}
+imp <- FeatureImp$new(predictor, loss = "mse")
+
+imp$results %>%
+  mutate_if(is.numeric, round, 4) %>%
+  kable()
+```
+
+```{r}
+#| label: fig-importancias
+#| fig-cap: Importancias de Random Forest.
+plot(imp) + theme_minimal()
+```
+
+Para estudiar el efecto marginal de las variables podemos usar la @fig-pdp. Donde se ve que los efectos de las dos covariables más importantes (LTG y BMI) parecen ser positivos, lo cual iría en línea con los resultados obtenidos en el ajuste lineal. En la misma figura también se puede ver el gráfico de SEX que, en línea con lo obtenido en el modelo lineal, parece ser negativo.
+
+```{r}
+#| label: fig-pdp
+#| fig-cap: Partial dependence plots de las dos covariables más importantes de Random Forest y SEX.
+#| fig-subcap: 
+#|   - ""
+#|   - ""
+#|   - ""
+#| layout-ncol: 2
+   
+pd_ltg <- FeatureEffect$new(predictor, feature = "ltg", method = "pdp")
+
+pd_bmi <- FeatureEffect$new(predictor, feature = "bmi", method = "pdp")
+
+pd_sex <- FeatureEffect$new(predictor, feature = "sex", method = "pdp")
+
+plot(pd_ltg) +
+  theme_minimal() +
+  labs(title="PDP de LTG") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot(pd_bmi) +
+  theme_minimal() +
+  labs(title="PDP de BMI") +
+  theme(plot.title = element_text(hjust = 0.5))
+
+plot(pd_sex) +
+  theme_minimal() +
+  labs(title="PDP de Sex") +
+  theme(plot.title = element_text(hjust = 0.5))
+```
+
+{{< pagebreak >}}
+
+## Conclusiones y pendientes
+
+En este ejemplo busqué entender el efecto de distintas variables en la progresión de la diabates. Para ello, luego de un breve análisis exploratorio, ajusté un modelo lineal y un Random Forest para luego comparar sus resultados. Siendo este último el que tuvo un menor error en la muestra de testeo, aún sin hacer una búsqueda intensiva de hiperparámetros. En cuanto a la interpretación de los parámetros ambos modelos coinciden en que LTG y BMI son importantes, sin embargo SEX parece tener un efecto mayor en el ajuste lineal, mientras que en Random Forest fue la covariable menos importante.
+
+Queda, entre muchas otras cosas, entender mejor qué causa la estructura en los residuos del modelo lineal y tratar de dar algún tipo de significancia estadística a los resultados de Random Forest. Además de hacer una busqueda de hiperámetros con validación cruzada y probar otras ténicas de interpretación como SHAP.
+
+## Referencias
+
+Shmueli, G. (2010). To explain or to predict? Statistical Science, 25(3), 289-310.
+
+James, G., Witten, D., Hastie, T., & Tibshirani, R. (2013). An introduction to statistical learning: with applications in R. Corrected edition. New York, Springer.
+
+Hastie, T., Tibshirani, R., & Friedman, J. H. (2009). The elements of statistical learning: data mining, inference, and prediction. 2nd ed. New York, Springer.
+
+Molnar, C. (2019). Interpretable Machine Learning.
