@@ -1,0 +1,244 @@
+Como se mencionó anteriormente, dos de los problemas principales de lo árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que ese capítulo se estudian dos métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}.
+
+Los ensambles mejoran la capacidad predictiva y reducen la variabilidad. La idea general es agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
+
+\section{\textit{Bagging}}
+
+Uno de los grandes problemas de los árboles decisión es la varianza que tienen, por lo que parece intuitivo aplicar técnicas que permitan promediar métodos estadísticos para reducir la varianza manteniendo el sesgo bajo.
+
+La idea de \textit{Bagging} es calcular $\hat{f}^1(x),\hat{f}^2(x),...,\hat{f}^B(x)$ usando B muestras boosrtapeadas y promediar las predicciones para reducir la varianza. Es decir
+
+
+\begin{equation}
+    \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
+\end{equation}
+
+La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán mucha poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo.
+
+\textit{Bagging} reduce la varianza sin aumentar el sesgo.
+Partiendo de las predicciones
+\begin{equation}
+    \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
+\end{equation}
+
+calcular el error viene dado por
+
+\begin{equation}
+    MSE=E[(y-\hat{f}_{bag}(x))^2] = \text{Bias}^2 + \text{Varianza}+ \sigma^2
+\end{equation}
+
+ahora nos concentramos en cómo la varianza afecta al error
+\begin{equation}
+    Var(\hat{f}_{bag}(x))=Var(\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x))=\frac{1}{B^2}Var(\sum_{b=1}^{B}\hat{f}^b(x))
+\end{equation}
+	
+
+asumiendo que los $\hat{f}^b(x)$ están identicamente distribuidos, se puede reescribir:
+
+\begin{equation}
+    Var(\sum_{b=1}^{B}\hat{f}^b(x))=\sum_{b=1}^B Var(\hat{f}^b(x)) + \sum_{i=1}^B\sum_{j\neq i}^B cov(\hat{f}^i(x), \hat{f}^j(x))
+\end{equation}
+
+ahora asumiendo varianzas iguales ($Var(\hat{f}^b(x))=\sigma^2$) y correlaciones identicas ($\rho$) para cada par de árboles:
+
+\begin{equation}
+    Var(\sum_{b=1}^{B}\hat{f}^b(x))=B\sigma^2 + B(B-1)\rho\sigma^{2}
+\end{equation}
+
+volviendo a la varianza total:
+
+\begin{equation}
+    \begin{aligned}
+		Var(\hat{f}_{bag}(x)) &= \frac{1}{B^2}(B\sigma^{2}+B(B-1)\rho\sigma^{2}) \\
+		&= \sigma^{2}(\frac{1}{B}+\frac{\rho B(B-1)}{B^2})
+    \end{aligned}
+\end{equation}
+
+Por lo tanto:
+
+\begin{itemize}
+    \item Cuando $B \to \infty$, $\frac{1}{B} \to 0$ y la varianza se aproxima a $\rho\sigma^2$
+    \item La reducción de varianza depende tanto de $B$ como de $\rho$
+    \item Como $\rho < 1$, la varianza final ($\rho\sigma^2$) es menor que la varianza original ($\sigma^2$)
+\end{itemize} 
+
+\textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace un muestra \textit{boostrap} solamente se toma en cuenta aproximadamente el 63\% de los datos.
+
+Para probar que \textit{Bootstrap} solo ve aproximadamente 2/3 de los datos, partimos de la probabilidad de No ser seleccionado en una muestra:
+\begin{equation}
+P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}    
+\end{equation}
+	
+Luego, como se toman $n$ muestras con reemplazo, la probabilidad de no ser seleccionado ninguna muestra
+\begin{equation}
+P(\text{No ser seleccionado en ninguna muestra}) = (1-\frac{1}{n})^{n}
+\end{equation}
+	
+cuando $n\rightarrow \infty$:
+	
+\begin{equation}
+\lim_{n\rightarrow \infty}(1-\frac{1}{n})^{n} = \frac{1}{e}\approx 0.368
+\end{equation}
+	
+\begin{itemize}
+    \item La probabilidad de ser seleccionado al menos una vez es $1-\frac{1}{e} \approx 0.632$
+    \item Aproximadamente el 63.2\% de las observaciones serán incluidas en cada muestra bootstrap
+    \item El restante 36.8\% de las observaciones quedan fuera de la muestra (out-of-bag)
+\end{itemize}
+
+Este resultado permite estimar el error usando las observaciones \textit{out-of-bag} como muestra de testeo. Con un $B$ suficientemente grande, este error es asintóticamente equivalente a \textit{leave-one-out cross validation}, lo cual es particularmente útil cuando se cuenta con una muestra grande donde el \textit{cross validation} tradicional sería computacionalmente costoso.
+
+%#TODO: MOSTRAR GRAFICO QUE REFLEJE ESTO.
+
+Una de las limitaciones de \textit{Bagging} es que, al utilizar todas las variables independientes en cada árbol del modelo, puede no reducir significativamente la varianza cuando estas variables están altamente correlacionadas. Esto se debe a que los árboles generados tienden a ser similares, lo que limita el beneficio del promediado de las predicciones. Este punto puede verse en la demostración anterior, donde a menor $\rho$ menor es el error.
+
+\subsection{Random Forest}
+
+\textit{Random Forest} propone una mejora con respecto a \textit{Bagging} al tener en cuenta solo un sub-conjunto de las covariables para cada \textit{split}. Esto permite que los árboles sean distintos entre ellos, haciendo que los árboles estén menos correlacionados entre ellos y por lo tanto reduciendo más el error.
+
+El parámetro que define la cantidad de variables que se tiene cuenta en cada \textit{split} se denomina $m$. Cabe destacar que un \textit{Random Forest} con $m=p$, siendo $p$ la cantidad de covariables, es \textit{bagging}. Por lo que \textit{Random Forest} puede considerarse un caso particular de \textit{bagging}.
+Mas formalmente se puede pensar el predictor \textit{Random Forest} como
+
+\begin{equation}
+\hat{f}_{\text{rf}}(x)=\frac{1}{B}\sum_{b=1}^{B}T(x;\Theta_b)    
+\end{equation}
+
+Donde $( T(x; \Theta_b) )$ representa el valor predicho por el b-ésimo árbol de decisión para una observación $x$, construido a partir de una muestra \textit{bootstrap} y parámetros aleatorios $\Theta_b$.
+
+Es interesante notar que, si tomamos si $B\rightarrow\infty$, es decir cuando se promedian muchos árboles, por Ley de los Grandes Números se puede probar que:
+
+\begin{equation}
+\lim_{B\rightarrow\infty}\hat{f}_{\text{rf}}(x)=\mathit{E}[T(x;\Theta_b)]    
+\end{equation}
+
+Esto significa que, con suficientes árboles, la predicción de \textit{Random Forest} se aproxima al valor esperado de un único árbol. La demostración formal y los detalles pueden verse en CITAR RF, sin embargo de manera intuitiva puede verse en la figura @fig-rf-predictions como a medida que aumenta la cantidad de árboles la variabilidad de las predicciones disminuye.
+
+% #TODO: mostrar la convergencia y variabilidad en predicciones
+
+\section{Boosting}
+
+A diferencia de \textit{Bagging}, \textit{Boosting} no promedia predicciones, sino que construye un modelo iterativamente. Donde cada modelo se construye con el objetivo de corregir el error cometido por el modelo anterior. A continuación se presenta un ejemplo de cómo funciona el algoritmo de \textit{Gradient Boosting Machines (GBM)} propuesto por \cite{friedman_2001}.
+
+Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\hat{f}(x)$ a partir de un conjunto de datos $(X,Y)$. En este caso, el conjunto de datos es una muestra i.i.d. de $(X,Y)$ de tamaño $n$:
+
+\begin{equation}
+(X,Y)=\{(x_1,y_1),(x_2,y_2),...,(x_n,y_n)\}    
+\end{equation}
+
+Donde $x_i$ es un vector de covariables y $y_i$ es la variable de respuesta, en este caso, continua. Por lo que se trata de un problema de regresión.
+
+El algoritmo de \textit{Gradient Boosting Machines} propone un método para encontrar un aproximación de la función $f(x)$ que minimiza una función de pérdida $L(y,f(x))$:
+
+\begin{equation}
+\hat{f}(x)=\arg\min_{f}\frac{1}{n}\sum_{i=1}^{n}L(y_i,f(x_i))
+\end{equation}
+
+En definitiva, se ve que la forma de aproximar la función $f(x)$ es a través de una combinación lineal de modelos base $h(x,\theta)$:
+
+\begin{equation}
+\hat{f}(x)=\sum_{b=1}^{B}\gamma_b h_b(x,\theta_b)
+\end{equation}
+
+\subsection{Algoritmo}
+
+El algoritmo de \textit{Gradient Boosting Machines} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
+
+\begin{enumerate}
+    \item Inicializar $\hat{f}_0(x)$ con una constante
+    \item Para cada iteración $b=1,2,...,B$:
+    \begin{itemize}
+        \item Calcular el gradiente de la función de pérdida y utilizar su valor negativo.
+        \item Ajustar el modelo base $h_b(x,\theta_b)$ a los datos $(X,g_b(X))$
+        \item Encontrar el mejor gradiente descend step-size $\gamma_b$:
+    \begin{equation}
+    \gamma_b=\arg\min_{\gamma}\sum_{i=1}^{n}L(y_i,\hat{f}_{b-1}(x_i)+\gamma h_b(x_i,\theta_b))    
+    \end{equation}
+    \item Actualizar la aproximación:
+    \begin{equation}
+    \hat{f}_b(x)=\hat{f}_{b-1}(x)+\gamma_b h_b(x,\theta_b)    
+    \end{equation}
+    \end{itemize}
+    \item Devolver el modelo final.
+\end{enumerate}
+
+\subsection{Funciones de pérdida} 
+Dependiendo el problema y los datos con los que se esté trabajando, se pueden utilizar distintas funciones de pérdida. A continuación se presentan algunas de las más comunes para problemas de regresión. Es decir, cuando la variable de respuesta $(y)$ es continua.
+
+\subsubsection{Error Cuadrático Medio (MSE)}
+
+Una de las funciones de pérdida más comunes es el error cuadrático medio (MSE), que se define como:
+\begin{equation}
+L(y,f(x))=\frac{1}{2}(y-f(x))^2    
+\end{equation}
+
+Una de las ventajas que tienen este tipo de funciones de pérdida es que son diferenciables, lo cual facilita el cálculo del gradiente. Que simplemente es:
+\begin{equation}
+\begin{aligned} 
+\frac{\partial L(y,f(x))}{\partial f(x)}&=\frac{\partial}{\partial f(x)}\frac{1}{2}(y-f(x))^2\\
+&=\frac{1}{2}2(y-f(x))\frac{\partial(y-f(x))}{\partial f(x)}\\
+&=-(y-f(x)) = F(x)-y \\
+\end{aligned}
+\end{equation}
+
+Luego, como el gradiente indica la dirección de máximo crecimiento, el negativo del gradiente indica la dirección de máximo decrecimiento. Lo cual es lo que se busca en el algoritmo de \textit{boosting}, es decir, minimizar la función de pérdida. Por lo que el gradiente de la función de pérdida es:
+
+\begin{equation}
+- g_b(x)=y-F(x)
+\end{equation}
+
+Lo cual es simplemente el residuo.
+
+\subsubsection{Alternativas robustas}
+
+Como se mencionó anteriormente, una de las ventajas de utilizar la función de pérdida MSE es que es diferenciable. Sin embargo, el hecho de que penalice los errores grandes puede ser una desventaja cuando se trabaja con \textit{outliers}. Por lo que también se puede utilizar la función de pérdida absoluta (MAE) que se define como:
+\begin{equation}
+L(y,f(x))=|y-f(x)|
+\end{equation}
+
+ó la función de pérdida Huber que se define como:
+\begin{equation}
+L(y,f(x))=\begin{cases}
+    (y-f(x))^2 & \text{si } |y-f(x)|\leq\delta \\
+    2\delta|y-f(x)|-2\delta^2 & \text{si } |y-f(x)|>\delta
+\end{cases}
+\end{equation}
+
+A continuación, en la fig-loss-functions,  se presentan las funciones de pérdida anteriores. Puede verse que MSE aumenta mucho cuando hay errores grandes, mientras que MAE y Huber son más robustas a los \textit{outliers}. Además, Huber se comporta similar a MSE cuando el error es pequeño, pero al aumentar el error, comienza a penalizar menos.
+
+%#TODO: mostrar grafico de funciones de perdida
+
+
+\subsection{Modelos base}
+Si bien el algoritmo de \textit{Boosting} puede utilizar múltiples modelos base, en este trabajo se expondrán únicamente los modelos base de árboles de decisión.
+
+Como se mencionó anteriormente, una de las ventajas de los árboles de decisión es poder capturar interacciones entre las covariables. Esta característica puede ser regulada mediante un hiperparámetro que indica la profundidad máxima de los árboles. En particular, la literatura sugiere utilizar árboles de poca profundidad en este tipo de modelos. Siendo los \textit{stumps} los árboles de profundidad 1 los más utilizados.
+
+En la fig-gbm-depth se puede ver el efecto de la profundidad de los árboles en el error del modelo. Puede verse que a medida que aumenta la profundidad del árbol, el error disminuye hasta llegar a aproximadamente 10, luego de lo cual el error se estabiliza.
+%#TODO: error vs. profundida del arbol
+
+\subsection{ Regularización}
+Uno de los principales problemas de los modelos de aprendizaje automático es el sobreajuste. Es decir, que el modelo se ajuste demasiado a los datos de entrenamiento y por lo tanto no generalice bien a nuevos datos. Esto se da porque las funciones que se utilizan son muy flexibles y pueden llegar a ajustarse al conjunto de datos, por lo que existen determinadas técnicas para evitar esto. En este trabajo, se estudiarán tres técnicas: \textit{subsampling}, \textit{shrinkage} y \textit{early stopping}.
+
+\subsubsection{ Subsampling}
+La idea intuitiva detrás del \textit{subsampling} es introducir variabilidad en el entrenamiento del modelo. Esto se logra al considerar un subconjunto de las observaciones para cada iteración del algoritmo. El sampleo puede ser con o sin reemplazo. Cabe aclarar que para definir la proporción de la muestra que se utiliza, se utiliza el hyperparámetro \textit{bag fraction} que toma valores entre 0 y 1. Por ejemplo, si se tiene una muestra de 1000 observaciones y se utiliza un \textit{bag fraction} de 0.1, se utilizarán 100 observaciones para cada iteración.
+
+Pese a que esta técnica puede ayudar a en casos donde los \textit{datasets} sean muy grandes y el costo computacional sea alto, al solo considerar una parte de las observaciones el entrenamiento puede ser menos preciso por lo que se debe balancear.
+
+\subsubsection{ Shrinkage}
+\textit{Shrinkage} se utiliza para reducir el efecto de los árboles individuales en el modelo. Intuitivamente, es un hiperparámetro que permite regular cuánto se toman en cuenta los errores de los árboles anteriores y se basa en que es preferible mejorar poco a poco las predicciones.
+
+En definitiva, el shrinkage puede incluirse $\hat{f}_b(x)$ como:
+\begin{equation}
+\hat{f}_b(x)=\hat{f}_{b-1}(x)+\lambda\gamma_b h_b(x,\theta_b)    
+\end{equation}
+
+Donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$para que el modelo converja al mismo error.
+
+En la fig-shrinkage se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de test. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
+
+%#TODO: mostrar error de entreanmiento y test
+
+\subsubsection{ Early Stopping}
+Puede verse también en la fig-shrinkage que el modelo converge a un error mínimo. Sin embargo, puede ser que el modelo se sobreajuste a los datos de entrenamiento y por lo tanto no generalice bien a nuevos datos. Para evitar esto, se puede utilizar el \textit{early stopping} que consiste en detener el entrenamiento cuando el error en la muestra de test deja de disminuir o lo hace de manera muy lenta.
+
+De esta forma, se puede evitar el sobreajuste y reducir el tiempo de entrenamiento de estos modelos. Esto último es particularmente útil cuando se trabaja con muestras grandes.

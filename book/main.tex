@@ -1,0 +1,85 @@
+\documentclass[12pt,twoside]{report}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage[a4paper,width=150mm,top=25mm,bottom=25mm,bindingoffset=6mm]{geometry}
+
+% Packages for images and captions
+\usepackage{graphicx}
+\graphicspath{{images/}}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amsmath}
+% Packages for formatting headers and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhead{}
+\fancyhead[RO,LE]{\leftmark} % Display current chapter title
+\fancyfoot{}
+\fancyfoot[LE,RO]{\thepage} % Page number on the left of even pages and right of odd pages
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Packages for formatting titles
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]
+  {\normalfont\huge\bfseries\centering}
+  {\thechapter.}
+  {1em}
+  {\huge}
+\titleformat{\section}
+  {\normalfont\Large\bfseries}
+  {\thesection.}
+  {0.5em}
+  {\Large}
+\titleformat{\subsection}
+  {\normalfont\large\bfseries}
+  {\thesubsection.}
+  {0.5em}
+  {\large}
+
+% Hyperref package for clickable links
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=false,
+    pdfpagemode=FullScreen,
+}
+
+% Update chapter title in the header
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+
+\begin{document}
+
+\input{titlepage}
+
+\input{abstract}
+
+\tableofcontents
+
+\chapter{Introduction}
+\input{chapters/introduction}
+
+\chapter{CART}
+\input{chapters/chapter02}
+
+\chapter{Ensambles de árboles}
+\input{chapters/chapter03}
+
+\chapter{Interpretabilidad}
+\input{chapters/chapter04}
+
+\chapter{Aplicaciones}
+\input{chapters/chapter05}
+
+
+\chapter{Conclusion}
+\input{chapters/conclusion}
+
+\appendix
+\chapter{Appendix Title}
+\input{chapters/appendix}
+
+
+\bibliographystyle{apalike}
+\bibliography{./references.bib}
+
+\end{document}

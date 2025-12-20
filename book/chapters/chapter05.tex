@@ -1,0 +1,104 @@
+En esta sección se utilizarán tres conjuntos de datos para probar algunas de las técnicas descriptas anteriormente. En particular, se utilizará \textit{Airfoil Self-Noise}, \textit{Concrete Comprehensive Strenght} y \textit{Wine Quality}. Para todos los casos se realizará un breve análisis exploratorio, seguido por una búsqueda de hiperparámetros con el fin de encontrar la combinación de los mismos que minimice el error de validación cruzada en la muestra de entrenamiento. Dicho subconjunto de datos tendrá el 80\% de los datos. Una vez encontrada la combinación óptima de hiperparámetros se evaluarán los modelos en la muestra de testeo, para luego calcular PFI y PDP. Cabe aclarar que los modelos a entrenar y comparar serán una regresión lineal, un árbol de decisión, \textit{Random Forest} y \textit{Gradient Boosting Machines}. Las métricas que se usarán para evaluar los modelos son: Error Cuadrático Medio (RMSE), Error Absoluto Medio (MAE) y Coeficiente de Determinación (R²). El RMSE mide la raíz cuadrada del promedio de los errores al cuadrado: $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$, el MAE mide el promedio de los errores absolutos: $\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$, y el $R^2$ indica la proporción de la varianza en la variable dependiente que es predecible a partir de las variables independientes: $\text{R}^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}$.
+
+En todos los casos para los árboles de decisión, se testearan los hiperparámetros: profundidad máxima (10, 20, 30), mínimo numero de observaciones para hacer una división (2, 5, 10) y mínimo número de observaciones por hoja (1, 2, 4). Para \textit{Random Forest}, se testeará el hiperparámetro número de árboles (100 a 2000 en incrementos de 100). Para \textit{Gradient Boosting Machines}, se testearan los hiperparámetros número de árboles (100 a 2000 en incrementos de 100) y learning rate (0.01, 0.1, 0.2).
+
+Cabe aclarar que el objetivo de las aplicaciones no es llegar a modelos óptimos, ni entender realmente cómo las variables interaccionan. Sino simplemente demostrar algunas de las metodologías descritas en los capítulos anteriores.
+
+
+\section{\textit{Airfoil Self-Noise}}
+
+Este conjunto de datos pertenece a la NASA y fue obtenido a partir de una serie de pruebas aerodinámicas y acústicas de secciones de palas de perfiles aerodinámicos bidimensionales y tridimensionales realizadas en un túnel de viento anecoico \cite{airfoil_self-noise_291} . Los datos contienen perfiles aerodinámicos NACA 0012 de diferentes tamaños a diversas velocidades de túnel de viento y ángulos de ataque. La envergadura del perfil aerodinámico y la posición del observador fueron las mismas en todos los experimentos. A continuación vemos una tabla que resume las variables incluidas:
+
+| Variable | Descripción |
+|----------|-------------|
+| frequency | Frecuencia en hertzios |
+| attack-angle | Ángulo de ataque en grados |
+| chord-length | Longitud de cuerda en metros |
+| free-stream-velocity | Velocidad de flujo libre en metros por segundo |
+| suction-side-displacement-thickness | Espesor de desplazamiento del lado de succión en metros |
+| scaled-sound-pressure | Presión sonora escalada en decibelios (variable dependiente) |
+
+En particular, se buscará predecir la variable \textit{scaled-sound-pressure} utilizando las demás. Los datos cuentan con 1503 observaciones, sin datos faltantes.
+
+En la fig-air\_corr puede verse la correlación entre las variables que incluye el conjunto de datos. Queda claro que hay una alta correlación entre '\textit{suction-side-displacement-thickness}' y '\textit{attack-angle}'. Por lo que se decidió eliminar el angulo de ataque por tener una correlación relativamente alta con '\textit{chord-lenght}' y menor que '\textit{scaled-sound-pressure}' con la variable de respuesta.
+
+%#TODO: armar figura de correlación
+
+Habiendo entrenado los modelos con los hiperparámetros definidos en la introducción. Se puede ver en la tbl-air\_predictions los resultados en la muestra de testeo. En particular se destaca que \textit{Gradient Boosting} tiene un menor error en todas las métricas. Por otra parte, la regresión lineal tiene el peor ajuste, esto último se repite con los tres conjuntos de datos que se probaron y va en línea con que los modelos más complejos tienden a tener una mejor performance predictiva.
+
+%#TODO: armar tabla de resultados
+A continuación, se procede a utilizar \textit{Permutation Feature Importance} y \textit{Partial Dependence Plots} para entender cómo el modelo de \textit{Gradient Boosting} utilizó las variables independientes. Empezando con la fig-air\_permutation\_importance se puede ver que '\textit{frequency}' y '\textit{suction-side-displacement-thickness}' son las variables más importantes, seguidas por '\textit{chord-length}' y '\textit{free-stream-velocity}'.
+
+%#TODO: armar figura de PFI
+
+Habiendo identificado las variables más importantes, el próximo paso sería entender cómo estas influyen en la variable de respuesta. Es decir como distintos cambios en la '\textit{frequency}' (Hz) y '\textit{suction-side-displacement-thickness}' (m). Para ello, se puede ver en la fig-air\_partial\_dependence los ICE (lineas celeste claro)y PDP (linea punteada) de dichas variables, junto con la cantidad de observaciones (líneas verticales en el eje X)
+La frecuencia exhibe una relación descendente con el nivel de presión sonora. En el rango de frecuencias estudiado (0-20000 Hz), se observan las siguientes características: La región de mayor influencia se encuentra en las frecuencias bajas (0-2500 Hz), donde el nivel de presión sonora alcanza sus valores máximos, aproximadamente 130-140 dB. A medida que la frecuencia aumenta, se evidencia una disminución gradual hasta alcanzar niveles de 100-110 dB a 20000 Hz.
+El análisis centrado revela que las frecuencias bajas contribuyen positivamente con una desviación de hasta +20 dB respecto a la media, mientras que las frecuencias altas tienen un efecto negativo de magnitud similar (-20 dB).
+Sin embargo, cabe destacar que prácticamente no hay observaciones por encima de 7500 de frecuencia. Por lo que las observaciones en estos niveles deberían tomarse con cautela.
+
+Por otro lado, la relación entre el espesor de desplazamiento y el nivel de presión sonora presenta un comportamiento más complejo, los niveles de presión sonora se mantienen predominantemente en el rango de 120-130 dB. La respuesta muestra una naturaleza no lineal con múltiples discontinuidades. El análisis centrado indica fluctuaciones de ±10 dB respecto al valor medio. Se observa una tendencia general levemente descendente, aunque menos pronunciada que en el caso de la frecuencia. Sin embargo, casi todas las observaciones se encuentran por debajo de 0.015.
+
+%#TODO: armar figura de PDP
+
+\section{\textit{Concrete Compressive Strength}}
+
+A continuación se realiza el mismo análisis para el conjunto de datos \textit{Concrete Compressive Strength} \cite{concrete_compressive_strength_165} que cuenta con 1030 observaciones distribuidas entre 9 variables. A continuación pueden verse todas las variables incluidas:
+ 
+| Variable | Descripción |
+|----------|-------------|
+| Cement | Cantidad de cemento en la mezcla (kg/m³) |
+| Blast Furnace Slag | Cantidad de escoria de alto horno (kg/m³) |
+| Fly Ash | Cantidad de cenizas volantes (kg/m³) |
+| Water | Cantidad de agua en la mezcla (kg/m³) |
+| Superplasticizer | Cantidad de superplastificante (kg/m³) |
+| Coarse Aggregate | Cantidad de agregado grueso (kg/m³) |
+| Fine Aggregate | Cantidad de agregado fino (kg/m³) |
+| Age | Edad del concreto en días |
+| Concrete compressive strength | Resistencia a la compresión del concreto (variable dependiente) |
+
+La variable dependiente será la fuerza del concreto y se utilizarán todas las demás para predecirla.
+
+En la @fig-concrete\_corr se puede ver la correlación entre las variables, no se ven correlaciones por encima de 0.8 en valor absoluto por lo que se definió mantener todas las variables en el modelo.
+
+%#TODO: armar figura de correlación
+
+En la tbl-concrete\_predictions se pueden ver las predicciones de los modelos. Nuevamente, se ve que el modelos con mejor ajuste en la muestra de testeo es \textit{Gradient Boosting}. A su vez puede verse que la regresión lineal es el que presenta las peores métricas. 
+%#TODO: armar tabla de resultados
+
+En la @fig-concrete\_permutation\_importance puede verse la importancia de las variables del modelo \textit{Gradient Boosting}, en particular se destaca la edad y la cantidad de cemento en la muestra como variables más importantes. Por lo que a continuación en la @fig-concrete\_partial\_dependence se pueden ver los PDPs y ICE de la edad y la cantidad de cemento en la muestra. Para la edad se observa una tendencia creciente pronunciada en los primeros 50 días, donde el efecto sobre la variable dependiente aumenta rápidamente. Después de los 50 días, la curva se estabiliza, mostrando un crecimiento más gradual y menos pronunciado.
+La relación con el cemento muestra un patrón escalonado, con varios puntos de inflexión claros. Se observan incrementos significativos en ciertos rangos específicos (alrededor de 250, 300 y 350 unidades). Es importante destacar que, para ambas variables, las líneas se ven mayormente paralelas. Esto último indica que dichas variables podrían ser bastante independientes de las demás.
+
+%#TODO: armar figura de PFI
+%#TODO: armar figura de PDP
+
+\section{\textit{Wine Quality}}
+
+Estos datos son los resultados de un análisis químico de vinos cultivados en la misma región de Italia pero derivados de tres variedades diferentes. El análisis determinó las cantidades de 13 componentes encontrados en cada uno de los tres tipos de vinos. El conjunto de datos se obtuvo de \cite{wine_109} y contiene 4898 observaciones.A continuación se presenta una tabla con las variables del conjunto de datos y su significado:
+ 
+| Variable | Significado |
+|----------|-------------|
+| fixed\_acidity | Acidez fija en el vino (principalmente ácido tartárico) |
+| volatile\_acidity | Acidez volátil en el vino (principalmente ácido acético) |
+| citric\_acid | Ácido cítrico presente en el vino |
+| residual\_sugar | Cantidad de azúcar residual en el vino |
+| chlorides | Contenido de cloruros (sal) en el vino |
+| free\_sulfur\_dioxide | Dióxido de azufre libre en el vino (conservante) |
+| total\_sulfur\_dioxide | Dióxido de azufre total en el vino (libre + combinado) |
+| density | Densidad del vino |
+| pH | Nivel de acidez/alcalinidad del vino (escala pH) |
+| sulphates | Contenido de sulfatos en el vino |
+| alcohol | Contenido de alcohol en el vino (\% por volumen) |
+| quality | Calidad del vino (puntuación entre 0 y 10) |
+
+En la fig-wine\_corr puede verse la correlación entre las variables del conjunto de datos. En particular, se destaca la alta correlación entre '\textit{total-sulfur-dioxide}' y '\textit{free-sulfur-dioxide}', por lo que se decidió eliminar la segunda.
+%#TODO: armar figura de correlación
+
+En la tbl-wine\_predictions pueden verse los resultados de los modelos en la muestra de testeo. En particular, se destaca que \textit{Random Forest} tuvo la mejor performance predictiva, inclusive superando a \textit{Gradient Boosting} que había sido el que tuvo mejores resultados en los otros dos conjuntos de datos.
+%#TODO: armar tabla de resultados
+
+En la fig-wine\_permutation\_importance puede verse la importancia de todas las variables independientes incluidas en el modelo de \textit{Random Forest}. En particular, se destacan el alcohol y la acidez volátil del vino como las variables más importantes. En la fig-wine\_partial\_dependence pueden verse los PDP y ICE de las dos variables más importantes. Para el alcohol se observa una relación positiva general entre el contenido de alcohol y la calidad del vino, la tendencia es creciente pero no lineal, con varios puntos de inflexión notables: Un primer incremento suave entre 9\% y 11\% de alcohol, un salto más pronunciado alrededor del 12\% de alcohol y una estabilización después del 13\% de alcohol. Por lo que el efecto es más pronunciado en el rango medio (11\-13\%). Las líneas individuales muestran un patrón bastante paralelo, sugiriendo pocas interacciones con otras variables. 
+
+Para la acidez volátil: Muestra una relación negativa con la variable objetivo siendo la tendencia es ligeramente decreciente y relativamente lineal. Por otra parte, el efecto es más suave y menos pronunciado que el del alcohol observándose: Una pendiente negativa consistente a lo largo del rango, mayor variabilidad en las predicciones individuales (líneas azules claras más dispersas) y que el efecto negativo se hace más pronunciado en valores más altos de acidez volátil
+
+%#TODO: armar figura de PFI
+%#TODO: armar figura de PDP

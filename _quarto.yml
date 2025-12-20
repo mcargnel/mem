@@ -1,0 +1,32 @@
+project:
+  type: book
+
+book:
+  title: "Métodos para interpretar ensambles de árboles"
+  author: "Martín Gabriel Cargnel"
+  date: "2/23/2025"
+  chapters:
+    - index.qmd
+    - sections/1_intro.ipynb
+    - sections/2_arboles.ipynb
+    - sections/3_ensambles.ipynb
+    - sections/4_interpretacion.ipynb
+    - sections/5_aplicacion.ipynb
+    - sections/6_conclusiones.ipynb
+    - sections/references.qmd
+
+
+bibliography: references.bib
+csl: apa-6th-edition.csl
+link-citations: true
+lang: es
+execute:
+  echo: false
+  include: false
+  fig-align: center
+format:
+  html:
+    theme: cosmo
+  pdf:
+    documentclass: scrreprt
+    toc-depth: 2

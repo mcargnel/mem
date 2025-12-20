@@ -1,0 +1,8 @@
+#  Resumen {.unnumbered}
+
+Los ensambles de árboles, en particular _Random Forest_ y _Gradient Boosting Machines_, son muy utilizados por su alta capacidad predictiva. Sin embargo, son considerados modelos de "caja negra" dado que por su complejidad resulta difícil el efecto de las covariables en la variable de respuesta. En este trabajo se estudiaron técnicas que permiten entender la importancia y el impacto que tienen las covariables, con el fin de utilizar modelos este tipo de modelo no solo para predecir, sino también para interpretar.
+
+\vspace{0.5cm}
+
+**Palabras clave:** Predecir e interpretar, ensambles de árboles, _Bagging_, _Boosting_, _Permutation Feature Importance_, _Partial Dependence Plots_, _Individual Conditional Expectation_.
+
