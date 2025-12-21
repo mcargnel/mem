@@ -4,6 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from matplotlib.figure import Figure
 import seaborn as sns
 from sklearn.model_selection import train_test_split, ParameterGrid, GridSearchCV
 from sklearn.inspection import PartialDependenceDisplay, permutation_importance
@@ -258,7 +259,7 @@ def calculate_permutation_importance(
         result = permutation_importance(
             model, X_test, y_test, n_repeats=10, random_state=42, n_jobs=-1
         )
-        importances[name] = result.importances_mean
+        importances[name] = result.importances_mean # type: ignore
     
     # Create a DataFrame for feature importances
     importance_df = pd.DataFrame(
@@ -269,7 +270,7 @@ def calculate_permutation_importance(
     
     return importance_df
 
-def plot_feature_importances(importance_df: pd.DataFrame, save_path=None) -> plt.Figure:
+def plot_feature_importances(importance_df: pd.DataFrame, save_path=None) -> Figure:
     """
     Plot feature importances across models.
     
@@ -313,7 +314,7 @@ def plot_feature_importances(importance_df: pd.DataFrame, save_path=None) -> plt
     
     return fig
 
-def plot_importance_heatmap(importance_df: pd.DataFrame, save_path=None) -> plt.Figure:
+def plot_importance_heatmap(importance_df: pd.DataFrame, save_path=None) -> Figure:
     """
     Plot importance rankings as heatmap (uses seaborn for heatmap).
     
@@ -376,7 +377,7 @@ def train_gbm_for_pdp(X_train: pd.DataFrame, y_train: np.ndarray) -> GradientBoo
 def figure_partial_dependence(
     X_train: pd.DataFrame, fitted_gbm: GradientBoostingRegressor, 
     save_path=None, feature_idx: int = 3
-) -> plt.Figure:
+) -> Figure:
     """
     Create partial dependence plot for a specific feature.
     
@@ -418,7 +419,7 @@ def figure_partial_dependence(
 def figure_ice_plots(
     X_train: pd.DataFrame, fitted_gbm: GradientBoostingRegressor,
     save_path=None, n_features: int = 3
-) -> plt.Figure:
+) -> Figure:
     """
     Create Individual Conditional Expectation (ICE) plots.
     
@@ -461,7 +462,7 @@ def figure_ice_plots(
 def figure_centered_ice_plots(
     X_train: pd.DataFrame, fitted_gbm: GradientBoostingRegressor,
     save_path=None, n_features: int = 3
-) -> plt.Figure:
+) -> Figure:
     """
     Create Centered Individual Conditional Expectation (ICE) plots.
     

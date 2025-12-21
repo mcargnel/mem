@@ -3,7 +3,7 @@
 import pandas as pd
 import numpy as np
 
-from ucimlrepo import fetch_ucirepo
+from ucimlrepo import fetch_ucirepo #type: ignore
 
 import matplotlib.pyplot as plt
 import seaborn as sns
