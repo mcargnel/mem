@@ -9,7 +9,6 @@ from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from ucimlrepo import fetch_ucirepo
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -199,20 +198,19 @@ def plot_rf_predictions(trees, preds, running_std, save_path=None):
     ax1.set_xlabel('Número de Árboles (M)', fontsize=11)
     ax1.set_ylabel('Valor Predicho', fontsize=11)
     ax1.set_title('Convergencia de las Predicciones', fontsize=12)
-    ax1.grid(True, alpha=0.3)
 
     # Plot: Running Standard Deviation vs. Number of Trees
     ax2.plot(trees[1:], running_std, color='green', linewidth=2)
     ax2.set_xlabel('Número de Árboles (M)', fontsize=11)
     ax2.set_ylabel('Desviación Estándar', fontsize=11)
     ax2.set_title('Variabilidad en las Predicciones', fontsize=12)
-    ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"RF predictions plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"RF predictions plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -284,11 +282,11 @@ def plot_loss_functions(predictions, mse_loss, mae_loss, delta_values, huber_los
     plt.ylabel('Pérdida L(y, f(x))', fontsize=11)
     plt.title('Comparación de Funciones de Pérdida', fontsize=12)
     plt.legend()
-    plt.grid(True, alpha=0.3)
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Loss functions plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Loss functions plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -360,12 +358,12 @@ def plot_gbm_depth_effect(depths, mse_scores, save_path=None):
     plt.xlabel('Profundidad máxima del árbol', fontsize=11)
     plt.ylabel('Error cuadrático medio', fontsize=11)
     plt.title('Error vs Profundidad del árbol en GBM', fontsize=12)
-    plt.grid(True, alpha=0.3)
     plt.legend()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"GBM depth effect plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"GBM depth effect plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -509,13 +507,13 @@ def plot_shrinkage_effect(all_data, shrinkage_values, save_path=None):
     ax2.set_ylabel('Error cuadrático medio', fontsize=11)
     ax2.set_title('Error de Test', fontsize=12)
     ax2.legend()
-    ax2.grid(True, alpha=0.3)
 
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Shrinkage effect plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Shrinkage effect plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -535,7 +533,7 @@ def main():
     logger.info("1. Random Forest Convergence Analysis")
     logger.info("="*60)
     trees, preds, running_std = calcul_rf_predictions(X_train, X_test, y_train)
-    rf_plot_path = OUTPUT_DIR / 'rf_predictions_convergence.png'
+    rf_plot_path = OUTPUT_DIR / 'rf_predictions_convergence.pdf'
     rf_fig = plot_rf_predictions(trees, preds, running_std, save_path=rf_plot_path)
     plt.close(rf_fig)
     
@@ -544,7 +542,7 @@ def main():
     logger.info("2. Loss Functions Comparison")
     logger.info("="*60)
     predictions, mse_loss, mae_loss, delta_values, huber_losses = calc_loss_functions()
-    loss_plot_path = OUTPUT_DIR / 'loss_functions_comparison.png'
+    loss_plot_path = OUTPUT_DIR / 'loss_functions_comparison.pdf'
     loss_fig = plot_loss_functions(
         predictions, mse_loss, mae_loss, delta_values, huber_losses, 
         save_path=loss_plot_path
@@ -556,7 +554,7 @@ def main():
     logger.info("3. GBM Depth Effect Analysis")
     logger.info("="*60)
     depths, depth_mse_scores = calc_gbm_depth_effect(X_train, X_test, y_train, y_test)
-    depth_plot_path = OUTPUT_DIR / 'gbm_depth_effect.png'
+    depth_plot_path = OUTPUT_DIR / 'gbm_depth_effect.pdf'
     depth_fig = plot_gbm_depth_effect(depths, depth_mse_scores, save_path=depth_plot_path)
     plt.close(depth_fig)
     
@@ -570,16 +568,16 @@ def main():
     shrinkage_data = reshape_shrinkage_data(
         shrinkage_values, n_estimators, train_scores, test_scores
     )
-    shrinkage_plot_path = OUTPUT_DIR / 'gbm_shrinkage_effect.png'
+    shrinkage_plot_path = OUTPUT_DIR / 'gbm_shrinkage_effect.pdf'
     shrinkage_fig = plot_shrinkage_effect(
         shrinkage_data, shrinkage_values, save_path=shrinkage_plot_path
     )
     plt.close(shrinkage_fig)
     
     # Save shrinkage results
-    shrinkage_csv_path = OUTPUT_DIR / 'gbm_shrinkage_results.csv'
-    shrinkage_data.to_csv(shrinkage_csv_path, index=False)
-    logger.info(f"Shrinkage results saved to: {shrinkage_csv_path}")
+    shrinkage_tex_path = OUTPUT_DIR / 'gbm_shrinkage_results.tex'
+    shrinkage_data.to_latex(shrinkage_tex_path, index=False)
+    logger.info(f"Shrinkage results saved to: {shrinkage_tex_path}")
 
     logger.info("\n" + "="*60)
     logger.info("Ensemble Methods Analysis Completed Successfully")

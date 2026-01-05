@@ -13,19 +13,17 @@ En este trabajo nos centramos en dos: \textit{split gain feature importance} y \
 Esta técnica fue propuesta por \cite{@friedman_2001} y asignar importancias en base a la cantidad de \textit{splits} que cada variable tiene en el árbol. Esta metodología solamente se puede aplicar para árboles de decisión y más formalmente se ve para un solo árbol:
  
 \begin{equation}
+    \label{eq:split-importance}
 \hat{I}_j^{2}(T)=\sum_{t=1}^{j-1}\hat{i}_t^{2}1(v_t=1)    
 \end{equation}
 
 done $I$ es la influencia para el nodo $j$ del árbol $T$, siento $v$ la \textit{splitting variable} que se suma por todos los nodos no terminales.
 
-%#TODO: agregaer label a la ecuacion 
-
-La eq-split-importance es calculada para un solo árbol. Por lo que cuando se trabaja con ensambles de árboles se debe generalizar a
+La ecuación \autoref{eq:split-importance} es calculada para un solo árbol. Por lo que cuando se trabaja con ensambles de árboles se debe generalizar a
 
 \begin{equation}
 \hat{\mathbf{I}}_j^{2}=\frac{1}{B}\sum_{m=1}^{B}\hat{I}^{2}_j(T_b)    
 \end{equation}
-
 
 Intuitivamente, se puede entender como el promedio de los \textit{splits} de cada variable. Sin embargo, esta medida esta basada en heurísticas y no contiene fundamentos estadísticos sólidos. Tal es así que fue criticada por \cite{zhou2020} y \cite{strobl_2008} por dar demasiada influencia a variables correlacionadas y favorecer variables categóricas con muchas categorias.
 
@@ -90,17 +88,54 @@ Para calcular $L_{perm}$ los autores proponen dos alternativas,
 \end{enumerate}
 
 
-
 \subsection{Model Class Reliance} 
 Un problema común a la hora de calcular importancias es que el modelo que terminamos usando se decide únicamente en función de una métrica de error. Esto no supondría inconvenientes si las importancias de los modelos fueran parecidas. Sin embargo, suele pasar que para muchos modelos con un poder predictivo similar las importancias de las variables cambien. A continuación se presenta un ejemplo en el cual se entrenaron múltiples \textit{Gradient Boosting Machines} con diferentes combinaciones de hiperparámetros, eligiendo las combinaciones que minimicen el error cuadrático medio. Para el elegir dicha combinación se utilizó validación cruzada con $k=5$. El conjunto de datos para este ejemplo en particular fue \textit{Abalone} \cite{abalone_1} donde se busca predecir la edad del Abalone en función de distintas características.
 
-Específicamente, para este ejemplo se entrenaron modelos con cantidad de árboles de 100 a 900 (con incrementos de 100), tasas de aprendizaje de 0.01, 0.05 y 0.1, profundidad máxima de 2, 3, 4 y 5, y funciones de pérdida de tipo pérdida cuadrática, error absoluto y Huber. Siendo un total de 324 modelos entrenados. En la tbl-display-importances se pueden ver los 15 modelos que menor error tuvieron, junto con los hiperparámetros asociados. Puede verse claramente, como hay múltiples modelos que tienen una performance predictiva similar pero distintos hiperparámetros.
+Específicamente, para este ejemplo se entrenaron modelos con cantidad de árboles de 100 a 900 (con incrementos de 100), tasas de aprendizaje de 0.01, 0.05 y 0.1, profundidad máxima de 2, 3, 4 y 5, y funciones de pérdida de tipo pérdida cuadrática, error absoluto y Huber. Siendo un total de 324 modelos entrenados. En la \autoref{tbl:display-importances} se pueden ver los 15 modelos que menor error tuvieron, junto con los hiperparámetros asociados. Puede verse claramente, como hay múltiples modelos que tienen una performance predictiva similar pero distintos hiperparámetros.
 
-% #TODO: agregat grafico de model class reliance
-% #TODO: agregar tabla de model class reliance en el apendice
-% #TODO: agregar heatmap con importancias
+\begin{table}[ht!]
+    \centering
+    \caption{Tabla con resultados de los 15 modelos con menor error de predicciones, junto con los parámetros seleccionados.}
+    \label{tbl:display-importances}
+    \begin{tabular}{lccccc}
+    \hline
+    Modelo & RMSE & Shrinkage & Función de Pérdida & Profundidad máx & Árboles \\
+    \hline
+    RF1 & 2.1488 & 0.10 & Huber & 3 & 200 \\
+    RF2 & 2.1498 & 0.05 & Huber & 4 & 200 \\
+    RF3 & 2.1498 & 0.01 & Huber & 4 & 900 \\
+    RF4 & 2.1506 & 0.10 & Huber & 4 & 100 \\
+    RF5 & 2.1513 & 0.01 & Pérdida cuadrática & 4 & 600 \\
+    RF6 & 2.1516 & 0.05 & Pérdida cuadrática & 4 & 200 \\
+    RF7 & 2.1518 & 0.05 & Huber & 3 & 300 \\
+    RF8 & 2.1518 & 0.01 & Pérdida cuadrática & 4 & 700 \\
+    RF9 & 2.1519 & 0.05 & Huber & 3 & 400 \\
+    RF10 & 2.1522 & 0.01 & Pérdida cuadrática & 4 & 800 \\
+    RF11 & 2.1522 & 0.01 & Huber & 4 & 800 \\
+    RF12 & 2.1526 & 0.05 & Pérdida cuadrática & 4 & 100 \\
+    RF13 & 2.1530 & 0.01 & Pérdida cuadrática & 4 & 500 \\
+    RF14 & 2.1531 & 0.10 & Pérdida cuadrática & 4 & 100 \\
+    RF15 & 2.1537 & 0.01 & Pérdida cuadrática & 4 & 900 \\
+    \hline
+    \end{tabular}
+\end{table}
 
-Además, y posiblemente más preocupante, cuando vemos la fig-plot-importances vemos como las importancias de las variables (calculadas mediante \textit{Permutation Feature Importance}) varían entre modelos con un poder predictivo similar. Este mismo fenómeno puede verse también en la fig-plot-heatmap donde para los distintos modelos las variables tienen rankings de importancia muy diferentes. El heatmap muestra claramente cómo una misma variable puede ser considerada la más importante (ranking 1) en un modelo, mientras que en otro puede tener una importancia mucho menor (ranking 5 o 6). Esta inconsistencia en la importancia de las variables entre modelos con rendimiento similar sugiere inestabilidad en la interpretación de los resultados a los que se puede llegar.
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_4/feature_importances.pdf}
+    \caption{Importancias de las variables para distintos modelos de Gradient Boosting con rendimiento similar.}
+    \label{fig:line-plot-importances}
+\end{figure}
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_4/importance_heatmap.pdf}
+    \caption{Mapa de calor de las importancias de las variables para distintos modelos de Gradient Boosting con rendimiento similar.}
+    \label{fig:heatmap-importances}
+\end{figure}
+
+
+Además, y posiblemente más preocupante, cuando vemos la Figura \autoref{fig:line-plot-importances} vemos como las importancias de las variables (calculadas mediante \textit{Permutation Feature Importance}) varían entre modelos con un poder predictivo similar. Este mismo fenómeno puede verse también en la Figura \autoref{fig:heatmap-importances} donde para los distintos modelos las variables tienen rankings de importancia muy diferentes. El heatmap muestra claramente cómo una misma variable puede ser considerada la más importante (ranking 1) en un modelo, mientras que en otro puede tener una importancia mucho menor (ranking 5 o 6). Esta inconsistencia en la importancia de las variables entre modelos con rendimiento similar sugiere inestabilidad en la interpretación de los resultados a los que se puede llegar.
 
 El fenómeno observado, donde múltiples modelos con similar capacidad predictiva asignan importancias sustancialmente diferentes a las variables, se conoce como el \textit{Rashomon Effect} en estadística \cite{breiman_2001}. Este término, inspirado en la película de Kurosawa donde un mismo evento es narrado desde perspectivas contradictorias es formalizado en \cite{fisher2019} como el "conjunto de Rashomon", definido como la colección de modelos con rendimiento predictivo similar pero con diferentes estructuras internas. Esta multiplicidad de explicaciones válidas representa un desafío fundamental para la interpretabilidad en \textit{machine learning}, ya que sugiere que la importancia de una variable no es una propiedad intrínseca de los datos, sino que depende del modelo específico elegido.
 
@@ -132,10 +167,9 @@ En la práctica para estimar MCR se utiliza un estimador \textit{plug-in}, es de
 Otra técnica útil para interpretar modelos de árboles es mediante \textit{Partial Dependence Plots}. Los mismos también fueron introducidos por \cite{friedman_2001}, donde los plantea como una técnica para aislar el efecto de una covariable sobre la variable de respuesta, más formalmente lo que se busca estimar es:
 
 \begin{equation}
+    \label{eq:pdp}
 \bar{f}(X_z)=\mathcal{E}_{x_l}[\hat{f}(x)]=\int \hat{F}(z,x_l)p(x_l)dx_l    
 \end{equation}
-
-%#TODO: add equation label {#eq-pdp}
 
 donde $\hat{f}(x)$ es el modelo entrenado, $z$ es el subset de variables a las que queremos estimar el efecto, $x_l$ representa todas las otras predicciones (que se mantienen constantes), $p(x_l)$ es la distribución conjunta de todas las otras variables y $\mathcal{E}_{x_l}[.]$ es la esperanza sobre la distribución $x_l$
 
@@ -154,9 +188,15 @@ Cuyo algoritmo sería:
 
 Cabe aclarar que al modificar solamente una variable y dejar el resto como estaban, se esta asumiendo que las variables $z$ son independientes a todo el resto. Algo que puede o no ser cierto dependiendo de la naturaleza de los datos. Además, al cambiar los valores de las variables a evaluar se podrían dar combinaciones poco realistas en la practica.
 
-Con el fin de ejemplificar los gráficos de dependencia parcial se entrenó un modelo de \textit{Gradient Boosting Machine} con 100 árboles con el fin de predecir la edad del \textit{Abalone} en función de distintas medidas físicas. Una vez entrenado el modelo, se puede ver en la @fig-plot-impacts el efecto del peso total en la edad.
+Con el fin de ejemplificar los gráficos de dependencia parcial se entrenó un modelo de \textit{Gradient Boosting Machine} con 100 árboles con el fin de predecir la edad del \textit{Abalone} en función de distintas medidas físicas. Una vez entrenado el modelo, se puede ver en la \autoref{fig:partial-dependence-plot} el efecto del peso total en la edad.
 
-%#TODO: agregar grafico de pdp
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_4/partial_dependence_plot.pdf}
+    \caption{Gráfico de dependencia parcial para el peso total en la predicción de la edad del Abalone.}
+    \label{fig:partial-dependence-plot}
+\end{figure}
+
 
 Sin embargo, como se mencionó anteriormente, los PDPs sufren problemas cuando las variables no son independientes. Para solventar esto, se puede utilizar el método de \textit{Individual Conditional Expectation} (ICE) que consiste en calcular el PDP para cada observación en la muestra.
 
@@ -174,9 +214,14 @@ De esta forma, se podrían entender los PDPs como el promedio de los ICE. Dado q
 
 Cabe destacar que PDP y ICE deberían ser similares cuando las variables son independientes, pero cuando las variables no son independientes, los ICE pueden variar mucho por lo que se recomienda utilizar las dos técnicas.
 
-% #TODO: agregar grafico de ice
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_4/ice_plot.pdf}
+    \caption{Gráfico de \textit{Individual Conditional Expectation} (ICE) para el peso total en la predicción de la edad del Abalone.}
+    \label{fig:ice-plot}
+\end{figure}
 
-Como se puede ver en la fig-plot-ice, los ICE son mucho más variables que los PDP, lo que permite tener una visión más detallada del efecto de la variable en cuestión. Sin embargo, se puede ver que los ICE tienen distintas ordenadas al origen, lo que dificulta la comparación entre distintas variables y la identificación de efectos heterogéneos.
+Como se puede ver en la \autoref{fig:ice-plot}, los ICE son mucho más variables que los PDP, lo que permite tener una visión más detallada del efecto de la variable en cuestión. Sin embargo, se puede ver que los ICE tienen distintas ordenadas al origen, lo que dificulta la comparación entre distintas variables y la identificación de efectos heterogéneos.
 
 Para solventar este problema, se puede utilizar el método de \textit{Centered ICE} que consiste en centrar los ICE en algún punto de la distribución de la variable (los autores de este método sugieren el valor mínimo o máximo de la variable para tener gráficos sencillos de interpretar). Más formalmente se busca centrar cada curva $\hat{f}_i$ en un valor de referencia $(x^*,x_{ci})$ tal que:
 
@@ -186,9 +231,15 @@ Para solventar este problema, se puede utilizar el método de \textit{Centered I
 
 A modo de ejemplo, si $x^*$ es el valor mínimo de $x_s$ todas las curvas empiezan en cero, por otro lado si es el máximo se puede ver ver el efecto acumulado de $x_s$ sobre $\hat{f}$ relativo al caso base.
 
-A modo de ejemplo, en la fig-plot-centered-ice se puede ver el \textit{Centered ICE} para la misma variable de antes. En este caso $x^*$ es el valor mínimo por lo que todas las curvas empiezan en cero. También, se puede ver en rojo la curva de PDP centrada.
+A modo de ejemplo, en la \autoref{fig:centered-ice-plot} se puede ver el \textit{Centered ICE} para la misma variable de antes. En este caso $x^*$ es el valor mínimo por lo que todas las curvas empiezan en cero. También, se puede ver en rojo la curva de PDP centrada.
 
-% #TODO: agregar grafico de centered ice
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_4/centered_ice_plot.pdf}
+    \caption{Gráfico de \textit{Individual Conditional Expectation} (ICE) centrado para el peso total en la predicción de la edad del Abalone.}
+    \label{fig:centered-ice-plot}
+\end{figure}
+
 
 \subsection{\textit{Derivative ICE}}
 Con el fin de seguir identificando las interacciones entre las variables los autores proponen calcular los gráficos de la derivada parcial de $\hat{f}$ con respecto a $x_s$. A modo de formalizarlo, se asume independencia entre $x_s$ y el resto de las covariables, por lo que $\hat{f}$ puede ser escrita como:
@@ -203,12 +254,11 @@ lo cual significa que la relación entre $x_s$ y $\hat{f}$ no depende de $x_c$. 
 
 Pese a que \cite{pearl2018} menciona por qué los modelos de aprendizaje automático no pueden ser utilizados para hacer inferencia causal, dado que todos estos modelos se basan en el nivel de asociación entre variables, sin llegar a la intervención o contrafactuales. Sin embargo, \cite{Zhao2021} plantea que los PDPs y ICEs bajo ciertas condiciones pueden tener una interpretación en causal.
 
-Los autores se basan en que @eq-pdp es igual al \textit{backdoor adjustment} definido por \cite{Pearl1993} como
+Los autores se basan en que \autoref{eq:pdp} es igual al \textit{backdoor adjustment} definido por \cite{Pearl1993} como
 \begin{equation}
+    \label{eq:back-door}
 P(Y|do(X_s=x_s))=\int P(Y|X_s=x_s, X_c=x_c)dP(x_c)    
 \end{equation}
-
-%#TODO: add label {#eq-back-door}
 
 donde $P(Y|do(X_s=x_s))$ se refiere a la distribución de $Y$ luego de hacer un intervención en $X_s$. Esta formula permite identificar el efecto causal de $X_s$ en $Y$ siempre y cuando se cumpla cuando (1) ningún nodo $X_c$ sea dependiente descendiente de $X_s$ y (2) que $X_c$ 'bloquee' cualquier camino "back-door" entre $X_s$ e $Y$ que se puede pensar intuitivamente como una causa común entre $X_s$ e $Y$ que impide entender el efecto causal de $X_s$.
 
@@ -216,11 +266,11 @@ donde $P(Y|do(X_s=x_s))$ se refiere a la distribución de $Y$ luego de hacer un 
 E[Y|do(X_s=x_s)]=\int E[Y|X_s=x_s, X_c=x_c]dP(x_c)
 \end{equation}
 
-%# TODO: add {#eq-back-door-expectation}
 
 Ahora si partimos de $\hat{f}(x)$ la función aprendida por el modelo, que aproxima la expectativa condicional, es decir,  
 \begin{equation}
-\hat{f}(x) \approx E[Y \mid X=x].    
+    \label{eq:back-door-expectation}
+    \hat{f}(x) \approx E[Y \mid X=x].    
 \end{equation}
 
 asumiendo que el modelo está bien calibrado, es decir,  
@@ -238,7 +288,7 @@ podemos vincular ambas expresiones de la siguiente forma:
 \end{equation}
 
 
-por lo que puede verse que eq-pdp y eq-back-door-expectation son equivalentes si condicionando en el set $C$ es complementario al set $S$.
+por lo que puede verse que \autoref{eq:pdp} y \autoref{eq:back-door-expectation} son equivalentes si condicionando en el set $C$ es complementario al set $S$.
 
 \section{Relación con el proceso generador de los datos} 
 

@@ -10,7 +10,6 @@ from sklearn.model_selection import train_test_split, ParameterGrid, GridSearchC
 from sklearn.inspection import PartialDependenceDisplay, permutation_importance
 from sklearn.ensemble import GradientBoostingRegressor
 from ucimlrepo import fetch_ucirepo
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -143,12 +142,14 @@ def fit_gbm_model(X_train, y_train) -> GridSearchCV:
 
     return grid_search
 
-def calculate_importance(grid_search: GridSearchCV) -> tuple:
+def calculate_importance(grid_search: GridSearchCV, X_train: pd.DataFrame, y_train: np.ndarray) -> tuple:
     """
     Calculate importance metrics from grid search results.
     
     Args:
         grid_search: Fitted GridSearchCV object
+        X_train: Training features
+        y_train: Training target
         
     Returns:
         tuple: (models, rmse_values, top_params)
@@ -177,6 +178,7 @@ def calculate_importance(grid_search: GridSearchCV) -> tuple:
     for i in range(1, N):
         model_name = f'RF{i+1}'
         model = GradientBoostingRegressor(random_state=42, **top_params.iloc[i]['params'])
+        model.fit(X_train, y_train)
         models[model_name] = model
         rmse = np.sqrt(-top_params.iloc[i]['mean_test_score'])
         rmse_values[model_name] = rmse
@@ -303,14 +305,14 @@ def plot_feature_importances(importance_df: pd.DataFrame, save_path=None) -> Fig
     ax.tick_params(axis='y', labelsize=10)
 
     # Add grid for better readability
-    ax.grid(True, linestyle='--', alpha=0.3)
     ax.legend(title='Models', title_fontsize=11, fontsize=9, loc='best')
 
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Feature importance plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Feature importance plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -351,8 +353,9 @@ def plot_importance_heatmap(importance_df: pd.DataFrame, save_path=None) -> Figu
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Importance heatmap saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Importance heatmap saved to: {save_path_pdf}")
     
     return fig
 def train_gbm_for_pdp(X_train: pd.DataFrame, y_train: np.ndarray) -> GradientBoostingRegressor:
@@ -407,12 +410,12 @@ def figure_partial_dependence(
     )
 
     # Customize the plot
-    ax.grid(True, alpha=0.3)
     ax.set_title(f'Partial Dependence Plot for {feature_name}', fontsize=12)
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Partial dependence plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Partial dependence plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -450,12 +453,12 @@ def figure_ice_plots(
     )
 
     # Customize the plot
-    ax.grid(True, alpha=0.3)
     ax.set_title(f'ICE Plot for {feature_name}', fontsize=12)
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"ICE plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"ICE plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -496,12 +499,12 @@ def figure_centered_ice_plots(
     )
 
     ax.set_title(f'Centered ICE Plots for {feature_name}', fontsize=12)
-    ax.grid(True, alpha=0.3)
     plt.tight_layout()
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Centered ICE plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Centered ICE plot saved to: {save_path_pdf}")
     
     return fig
 
@@ -526,7 +529,7 @@ def main():
     logger.info("\n" + "="*60)
     logger.info("2. Model Importance Analysis")
     logger.info("="*60)
-    models, rmse_values, top_params = calculate_importance(grid_search)
+    models, rmse_values, top_params = calculate_importance(grid_search, X_train, y_train)
     
     # Display model summary
     model_summary_df = display_model_summary(models, rmse_values, top_params)
@@ -544,14 +547,14 @@ def main():
     logger.info("\n" + "="*60)
     logger.info("4. Creating Visualization Plots")
     logger.info("="*60)
-    importance_plot_path = OUTPUT_DIR / 'feature_importances.png'
+    importance_plot_path = OUTPUT_DIR / 'feature_importances.pdf'
     importance_fig = plot_feature_importances(
         importance_df, save_path=importance_plot_path
     )
     plt.close(importance_fig)
     
     # Plot importance heatmap
-    heatmap_plot_path = OUTPUT_DIR / 'importance_heatmap.png'
+    heatmap_plot_path = OUTPUT_DIR / 'importance_heatmap.pdf'
     heatmap_fig = plot_importance_heatmap(
         importance_df, save_path=heatmap_plot_path
     )
@@ -563,35 +566,35 @@ def main():
     logger.info("="*60)
     fitted_gbm = train_gbm_for_pdp(X_train, y_train)
     
-    pdp_plot_path = OUTPUT_DIR / 'partial_dependence_plot.png'
+    pdp_plot_path = OUTPUT_DIR / 'partial_dependence_plot.pdf'
     pdp_fig = figure_partial_dependence(
         X_train, fitted_gbm, save_path=pdp_plot_path, feature_idx=3
     )
     plt.close(pdp_fig)
     
     # 6. ICE Plots
-    ice_plot_path = OUTPUT_DIR / 'ice_plot.png'
+    ice_plot_path = OUTPUT_DIR / 'ice_plot.pdf'
     ice_fig = figure_ice_plots(
         X_train, fitted_gbm, save_path=ice_plot_path, n_features=3
     )
     plt.close(ice_fig)
     
     # 7. Centered ICE Plots
-    centered_ice_plot_path = OUTPUT_DIR / 'centered_ice_plot.png'
+    centered_ice_plot_path = OUTPUT_DIR / 'centered_ice_plot.pdf'
     centered_ice_fig = figure_centered_ice_plots(
         X_train, fitted_gbm, save_path=centered_ice_plot_path, n_features=3
     )
     plt.close(centered_ice_fig)
     
-    # Save model summary to CSV
-    summary_csv_path = OUTPUT_DIR / 'model_summary.csv'
-    model_summary_df.to_csv(summary_csv_path, index=False)
-    logger.info(f"Model summary saved to: {summary_csv_path}")
+    # Save model summary to LaTeX
+    summary_tex_path = OUTPUT_DIR / 'model_summary.tex'
+    model_summary_df.to_latex(summary_tex_path, index=False)
+    logger.info(f"Model summary saved to: {summary_tex_path}")
     
-    # Save importance dataframe
-    importance_csv_path = OUTPUT_DIR / 'feature_importances.csv'
-    importance_df.to_csv(importance_csv_path)
-    logger.info(f"Feature importances saved to: {importance_csv_path}")
+    # Save importance dataframe to LaTeX
+    importance_tex_path = OUTPUT_DIR / 'feature_importances.tex'
+    importance_df.to_latex(importance_tex_path)
+    logger.info(f"Feature importances saved to: {importance_tex_path}")
     
     logger.info("\n" + "="*60)
     logger.info("Model Interpretation Analysis Completed Successfully")

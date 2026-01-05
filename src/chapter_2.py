@@ -122,8 +122,9 @@ def plot_tree_model(regression_tree, X_train, save_path: Path = None) -> plt.Fig
     plt.title("Árbol de regresión", fontsize=20)
     
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        logger.info(f"Tree plot saved to: {save_path}")
+        save_path_pdf = str(save_path).replace('.png', '.pdf')
+        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"Tree plot saved to: {save_path_pdf}")
     
     return plt
 
@@ -181,11 +182,11 @@ def calc_tree_alpha(X_train, X_test, y_train, y_test, save_plot_path: Path = Non
     plt.title('Error Cuadrático Medio vs. Complejidad del Árbol (Máx. Nodos Hoja)', 
               fontsize=14)
     plt.legend()
-    plt.grid(True, alpha=0.3)
     
     if save_plot_path:
-        plt.savefig(save_plot_path, dpi=300, bbox_inches='tight')
-        logger.info(f"MSE plot saved to: {save_plot_path}")
+        save_plot_path_pdf = str(save_plot_path).replace('.png', '.pdf')
+        plt.savefig(save_plot_path_pdf, dpi=300, bbox_inches='tight')
+        logger.info(f"MSE plot saved to: {save_plot_path_pdf}")
     
     return results_df, plt
 
@@ -211,20 +212,20 @@ def main():
     logger.info(f"Test R² score: {test_r2:.4f}")
     
     # Visualize tree and save
-    tree_plot_path = OUTPUT_DIR / 'regression_tree_structure.png'
+    tree_plot_path = OUTPUT_DIR / 'regression_tree_structure.pdf'
     tree_plot = plot_tree_model(regression_tree, X_train, save_path=tree_plot_path)
     
     # Analyze complexity vs performance and save
-    mse_plot_path = OUTPUT_DIR / 'mse_vs_complexity.png'
+    mse_plot_path = OUTPUT_DIR / 'mse_vs_complexity.pdf'
     results_df, mse_plot = calc_tree_alpha(
         X_train, X_test, y_train, y_test, 
         save_plot_path=mse_plot_path
     )
     
     # Save results DataFrame
-    results_csv_path = OUTPUT_DIR / 'tree_complexity_results.csv'
-    results_df.to_csv(results_csv_path, index=False)
-    logger.info(f"Results DataFrame saved to: {results_csv_path}")
+    results_tex_path = OUTPUT_DIR / 'tree_complexity_results.tex'
+    results_df.to_latex(results_tex_path, index=False)
+    logger.info(f"Results DataFrame saved to: {results_tex_path}")
     logger.info(f"Results DataFrame preview:\n{results_df.head()}")
     logger.info(f"Results summary:\n{results_df.describe()}")
     

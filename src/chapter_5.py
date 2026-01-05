@@ -14,7 +14,6 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from ucimlrepo import fetch_ucirepo
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -23,7 +22,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 # Define output directory
-OUTPUT_DIR = Path(__file__).parent.parent / 'output/application'
+OUTPUT_DIR = Path(__file__).parent.parent / 'output/chapter_5'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 
@@ -125,9 +124,8 @@ def corr_calc(df: pd.DataFrame, save_path: Optional[Path] = None) -> Figure:
     plt.tight_layout()
 
     if save_path:
-        save_path_pdf = str(save_path).replace('.png', '.pdf')
-        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
-        logger.info(f"Correlation heatmap saved to: {save_path_pdf}")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"Correlation heatmap saved to: {save_path}")
 
     return fig
 
@@ -229,13 +227,11 @@ def permutation_importance_plot(
     ax.set_xlabel('Permutation Importance')
     ax.set_ylabel('Features')
     ax.set_title('Feature Importance for Gradient Boosting Model')
-    ax.grid(True, axis='x', linestyle='--', alpha=0.4)
     plt.tight_layout()
 
     if save_path:
-        save_path_pdf = str(save_path).replace('.png', '.pdf')
-        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
-        logger.info(f"Permutation importance plot saved to: {save_path_pdf}")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"Permutation importance plot saved to: {save_path}")
 
     return fig
 
@@ -269,15 +265,13 @@ def partial_dependence_plot(
             centered_text = " (Centered)" if centered else ""
             axs[i, j].set_title(f'PDP of {feature_titles[i]}{centered_text}')
             axs[i, j].set_ylabel('Partial Dependence')
-            axs[i, j].grid(True, linestyle='--', alpha=0.6)
 
     plt.suptitle('Partial Dependence Plots for Gradient Boosting Model', fontsize=14)
     plt.tight_layout(rect=(0, 0, 1, 0.95))
 
     if save_path:
-        save_path_pdf = str(save_path).replace('.png', '.pdf')
-        plt.savefig(save_path_pdf, dpi=300, bbox_inches='tight')
-        logger.info(f"Partial dependence plots saved to: {save_path_pdf}")
+        plt.savefig(save_path, dpi=300, bbox_inches='tight')
+        logger.info(f"Partial dependence plots saved to: {save_path}")
 
     return fig
 
@@ -299,7 +293,7 @@ def airfoil_self_noise():
     metrics_df = evaluate_models(
         air_y_test, air_dt_best, air_rf_best, air_gbm_best, air_lr_best, air_X_test
     )
-    metrics_df.to_latex(OUTPUT_DIR / 'airfoil_metrics.tex', index=False)
+    metrics_df.to_csv(OUTPUT_DIR / 'airfoil_metrics.csv', index=False)
 
     pi_fig = permutation_importance_plot(
         air_gbm_best, air_X_test, air_y_test, OUTPUT_DIR / 'airfoil_perm_importance.pdf'
@@ -345,7 +339,7 @@ def concrete_data():
         concrete_lr_model,
         concrete_X_test,
     )
-    metrics_df.to_latex(OUTPUT_DIR / 'concrete_metrics.tex', index=False)
+    metrics_df.to_csv(OUTPUT_DIR / 'concrete_metrics.csv', index=False)
 
     pi_fig = permutation_importance_plot(
         concrete_gbm_best,
@@ -389,7 +383,7 @@ def wine_data():
         wine_lr_model,
         wine_X_test,
     )
-    metrics_df.to_latex(OUTPUT_DIR / 'wine_metrics.tex', index=False)
+    metrics_df.to_csv(OUTPUT_DIR / 'wine_metrics.csv', index=False)
 
     pi_fig = permutation_importance_plot(
         wine_rf_best, wine_X_test, wine_y_test, OUTPUT_DIR / 'wine_perm_importance.pdf'

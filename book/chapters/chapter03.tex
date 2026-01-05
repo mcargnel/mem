@@ -111,9 +111,15 @@ Es interesante notar que, si tomamos si $B\rightarrow\infty$, es decir cuando se
 \lim_{B\rightarrow\infty}\hat{f}_{\text{rf}}(x)=\mathit{E}[T(x;\Theta_b)]    
 \end{equation}
 
-Esto significa que, con suficientes árboles, la predicción de \textit{Random Forest} se aproxima al valor esperado de un único árbol. La demostración formal y los detalles pueden verse en CITAR RF, sin embargo de manera intuitiva puede verse en la figura @fig-rf-predictions como a medida que aumenta la cantidad de árboles la variabilidad de las predicciones disminuye.
+Esto significa que, con suficientes árboles, la predicción de \textit{Random Forest} se aproxima al valor esperado de un único árbol. La demostración formal y los detalles pueden verse en CITAR RF, sin embargo de manera intuitiva puede verse en la \autoref{fig:rf-predictions-convergence} como a medida que aumenta la cantidad de árboles la variabilidad de las predicciones disminuye.
+%#TODO: citar RF
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_3/rf_predictions_convergence.pdf}
+    \caption{Convergencia y variabilidad de las predicciones para modelos de Random Forest con distintos números de árboles.}
+    \label{fig:rf-predictions-convergence}
+\end{figure}
 
-% #TODO: mostrar la convergencia y variabilidad en predicciones
 
 \section{Boosting}
 
@@ -203,9 +209,16 @@ L(y,f(x))=\begin{cases}
 \end{cases}
 \end{equation}
 
-A continuación, en la fig-loss-functions,  se presentan las funciones de pérdida anteriores. Puede verse que MSE aumenta mucho cuando hay errores grandes, mientras que MAE y Huber son más robustas a los \textit{outliers}. Además, Huber se comporta similar a MSE cuando el error es pequeño, pero al aumentar el error, comienza a penalizar menos.
+A continuación, en la \autoref{fig:loss-functions},  se presentan las funciones de pérdida anteriores. Puede verse que MSE aumenta mucho cuando hay errores grandes, mientras que MAE y Huber son más robustas a los \textit{outliers}. Además, Huber se comporta similar a MSE cuando el error es pequeño, pero al aumentar el error, comienza a penalizar menos.
 
-%#TODO: mostrar grafico de funciones de perdida
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_3/loss_functions_comparison.pdf}
+    \caption{Comparación de funciones de pérdida: MSE, MAE y Huber.}
+    \label{fig:loss-functions}
+\end{figure}
+
 
 
 \subsection{Modelos base}
@@ -213,8 +226,14 @@ Si bien el algoritmo de \textit{Boosting} puede utilizar múltiples modelos base
 
 Como se mencionó anteriormente, una de las ventajas de los árboles de decisión es poder capturar interacciones entre las covariables. Esta característica puede ser regulada mediante un hiperparámetro que indica la profundidad máxima de los árboles. En particular, la literatura sugiere utilizar árboles de poca profundidad en este tipo de modelos. Siendo los \textit{stumps} los árboles de profundidad 1 los más utilizados.
 
-En la fig-gbm-depth se puede ver el efecto de la profundidad de los árboles en el error del modelo. Puede verse que a medida que aumenta la profundidad del árbol, el error disminuye hasta llegar a aproximadamente 10, luego de lo cual el error se estabiliza.
-%#TODO: error vs. profundida del arbol
+En la \autoref{fig:gbm-depth-effect} se puede ver el efecto de la profundidad de los árboles en el error del modelo. Puede verse que a medida que aumenta la profundidad del árbol, el error disminuye hasta llegar a aproximadamente 10, luego de lo cual el error se estabiliza.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_3/gbm_depth_effect.pdf}
+    \caption{Error en función de la profundidad del árbol.}
+    \label{fig:gbm-depth-effect}
+\end{figure}
 
 \subsection{ Regularización}
 Uno de los principales problemas de los modelos de aprendizaje automático es el sobreajuste. Es decir, que el modelo se ajuste demasiado a los datos de entrenamiento y por lo tanto no generalice bien a nuevos datos. Esto se da porque las funciones que se utilizan son muy flexibles y pueden llegar a ajustarse al conjunto de datos, por lo que existen determinadas técnicas para evitar esto. En este trabajo, se estudiarán tres técnicas: \textit{subsampling}, \textit{shrinkage} y \textit{early stopping}.
@@ -234,9 +253,15 @@ En definitiva, el shrinkage puede incluirse $\hat{f}_b(x)$ como:
 
 Donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$para que el modelo converja al mismo error.
 
-En la fig-shrinkage se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de test. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
+En la \autoref{fig:gbm-shrinkage-effect} se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de test. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
 
-%#TODO: mostrar error de entreanmiento y test
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_3/gbm_shrinkage_effect.pdf}
+    \caption{Comparación del error de testeo y entrenamiento en función de distintos valores de \textit{shrinkage} y cantidad de árboles.}
+    \label{fig:gbm-shrinkage-effect}
+\end{figure}
+
 
 \subsubsection{ Early Stopping}
 Puede verse también en la fig-shrinkage que el modelo converge a un error mínimo. Sin embargo, puede ser que el modelo se sobreajuste a los datos de entrenamiento y por lo tanto no generalice bien a nuevos datos. Para evitar esto, se puede utilizar el \textit{early stopping} que consiste en detener el entrenamiento cuando el error en la muestra de test deja de disminuir o lo hace de manera muy lenta.

@@ -1,11 +1,16 @@
 En este capítulo se hará una revisión sobre árboles de regresión y clasificación (CART). Los CART entran dentro de la categoría de análisis supervisado no paramétrico, por lo que tienen una gran flexibilidad.
 Otra de las ventajas de estos algoritmos es su interpretabilidad, dado que es muy sencillo entender el efecto de cada variable explicativa en la variable dependiente simplemente siguiendo la estructura del árbol. Además, permiten entender naturalmente las interacciones entre dichas variables.
 
-En la fig-arbol-decision se muestra un árbol de decisión cuyo objetivo es predecir el índice de progresión de la diabetes utilizando la edad y el índice de masa corporal (BMI). El árbol se interpreta de arriba hacia abajo, lo que indica que el índice de masa corporal es la variable más relevante, ya que aparece en la primera división. Se observa que niveles más altos de BMI están asociados con un aumento en el índice de progresión de la diabetes.
+En la \autoref{fig:arbol-decision} se muestra un árbol de decisión cuyo objetivo es predecir el índice de progresión de la diabetes utilizando la edad y el índice de masa corporal (BMI). El árbol se interpreta de arriba hacia abajo, lo que indica que el índice de masa corporal es la variable más relevante, ya que aparece en la primera división. Se observa que niveles más altos de BMI están asociados con un aumento en el índice de progresión de la diabetes.
 
 Por otro lado, la edad también influye en la variable dependiente, pero su efecto se observa después de las primeras condiciones basadas en el BMI. Por ejemplo, para pacientes con un BMI menor o igual a 24.35 y una edad menor o igual a 57.5, el índice de progresión de la diabetes es 99.69. Esto destaca (1) la facilidad con la que se pueden interpretar visualmente los árboles de decisión y (2) cómo estos modelos representan de manera natural las interacciones entre diferentes variables.
 
-%# TODO: Incluir figura del árbol de decisión
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_2/regression_tree_structure.pdf}
+    \caption{Arbol de decisión para predecir el índice de progresión de la diabetes utilizando la edad y el índice de masa corporal (BMI).}
+    \label{fig:arbol-decision}
+\end{figure}
 
 \section{Elementos que componen un árbol}
 Antes de pasar a la construcción de los árboles, es de interés enfatizar que estos modelos se leen de arriba hacia abajo y definir ciertos elementos que los componen. En primer lugar definimos los nodos como los puntos en los cuales se dividen las observaciones. A su vez pueden clasificarse como:
@@ -65,10 +70,10 @@ con n el número de observaciones, $R$ el número total de regiones después de 
 
 Este algoritmo ya no crece de manera exponencial como el anterior, por lo que es más sencillo de calcular que el anterior.
 
-\subsection{Definir cuando un nodo es terminal}
+\subsection{Definir cuando un nodo es terminal} %# TODO: completar la subseccion
 
 Definir cuando un nodo es terminal es equivalente a pensar cuando un nodo
-%# TODO: completar la subseccion
+
 \subsection{Asignar valores a nodos terminales}
 
 Dado que la función a optimizar es el error cuadrático medio, se puede probar que la media muestral será la constante que minimice ese error.
@@ -121,16 +126,21 @@ El problema de querer encontrar sub-árboles es que pueden ser demasiados, hacie
 
 con $\alpha$ que sirve para regular la intensidad de la regularización y $|T|$ el número de nodos terminales del árbol T. Esta expresión permite obtener una secuencia ordenada de subárboles que podemos evaluar por medio de validación cruzada. Queda claro que aumentar $\alpha$ se generan árboles más pequeños.
 
-Se puede ver en la @fig-arbol-alpha como a medida que aumentan los valores de $\alpha$ inicialmente el error cuadrático medio disminuye, pero luego empieza a subir debido al sobre ajuste.
+Se puede ver en la \autoref{fig:arbol-alpha} como a medida que aumentan los valores de $\alpha$ inicialmente el error cuadrático medio disminuye, pero luego empieza a subir debido al sobre ajuste.
 
-%#TODO: incluir error cuadratico medio vs complejidad del arbol
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_2/mse_vs_complexity.pdf}
+    \caption{Error cuadrático medio vs complejidad del árbol para diferentes valores de $\alpha$.}
+    \label{fig:arbol-alpha}
+\end{figure}
+
 
 \section{Outliers y Limitaciones}
 \subsection{Outliers}
 Es sabido que las regresiones lineales son muy sensibles a \textit{outliers}. Sin embargo, como se ve en Brieman los valores atipicos terminan siendo aislados en pequeños nodos. Esta capacidad de aislar los \textit{outliers} permite hacer el modelo menos sensible a datos atípicos.
 
-\subsection{Limitaciones}
+\subsection{Limitaciones} %#TODO: agregar mas info.
 Dado que este trabajo se centra en la interpretación de modelos, la principal limitación que se destaca es la falta de estabilidad. Es decir que la varianza de los árboles genera que las particiones puedan ser muy distintas ante cambios en los datos. Esto lógicamente atenta contra la interpretación.
 
 Otras limitaciones son la falta de suavidad y las dificultades que tienen para captar una estructura aditiva en los datos.
-%#TODO: agregar mas info.
