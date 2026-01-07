@@ -14,7 +14,7 @@ Esta técnica fue propuesta por \cite{friedman_2001} y asigna importancias en ba
  
 \begin{equation}
     \label{eq:split-importance}
-\hat{I}_j^{2}(T)=\sum_{t=1}^{J-1}\hat{i}_t^{2}1(v_t=j)    
+\hat{I}_j^{2}(T)=\sum_{t=1}^{N-1}\hat{i}_t^{2}1(v_t=j)    
 \end{equation}
 
 donde $I$ es la influencia para el nodo $j$ del árbol $T$, siendo $v$ la \textit{splitting variable} que se suma por todos los nodos no terminales.
@@ -34,7 +34,7 @@ En el caso de las variables categóricas, este método prioriza aquellas variabl
 \subsection{Permutation Feature Importance} 
 
 Otra alternativa para calcular las importancias de las variables es utilizar \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} exclusivamente para \textit{Random Forest} que luego fue generalizada para cualquier modelo \cite{fischer_2019}. Estas técnicas se basan, intuitivamente, en entender cómo cambia la función de pérdida cuando se permutan las variables. Las variables más importantes serán aquellas que más cambien el error del modelo al ser permutadas.
-Como se ve a continuación, si bien \cite{fischer_2019} propone métodos para calcular la importancia en modelos de clasificación, se presentará la adaptación a un modelo de regresión. Por lo que habiendo entrenado un modelo de \textit{random forest} $\hat{f}$ para cada covariable $j \in \{1,2,...,J\}$, se construye un nuevo conjunto de datos $X_j$ permutando las observaciones de la covariable $j$ y dejando el resto de las observaciones fijas. Posteriormente, se entrena un nuevo modelo $\hat{f}_j$ utilizando el nuevo conjunto de datos $X_j$ y se calcula el error \textit{out-of-bag}:
+Como se ve a continuación, si bien \cite{fischer_2019} propone métodos para calcular la importancia en modelos de clasificación, se presentará la adaptación a un modelo de regresión. Por lo que habiendo entrenado un modelo de \textit{random forest} $\hat{f}$ para cada covariable $j \in \{1,2,...,p\}$, se construye un nuevo conjunto de datos $X_j$ permutando las observaciones de la covariable $j$ y dejando el resto de las observaciones fijas. Posteriormente, se entrena un nuevo modelo $\hat{f}_j$ utilizando el nuevo conjunto de datos $X_j$ y se calcula el error \textit{out-of-bag}:
 
 \begin{equation}
 E_{OOB}(X_j) = \frac{1}{n} \sum_{i=1}^{n} \left( y_i -  \hat{f}^{(b)}(X_{i,j}) \right)^2    
@@ -47,7 +47,7 @@ Luego se compara el error \textit{out-of-bag} con el error del modelo original y
 
 Sin embargo, como se mencionó anteriormente este método para calcular importancias no es generalizable dado que utiliza los errores \textit{out-of-bag}, por lo que un modelo que no utilice esta metodología no podría usarla. Sin embargo, es fácilmente extendible a dichos casos. A continuación se presenta la generalización propuesta en \cite{fischer_2019}.
 
-Los autores se basan en la propuesta de \cite{breiman2001a}, pero deciden llamar a la medida de importancia \textit{Model Reliance} (MR). Por lo que partiendo de un modelo entrenado $\hat{f}$, una variable de respuesta $y$, una función de pérdida $L$ y una matriz de diseño $X$ con covariables $j \in \{1,2,...,J\}$, para cada covariable $j$ se permuta dicha covariable y se calcula la pérdida esperada:
+Los autores se basan en la propuesta de \cite{breiman2001a}, pero deciden llamar a la medida de importancia \textit{Model Reliance} (MR). Por lo que partiendo de un modelo entrenado $\hat{f}$, una variable de respuesta $y$, una función de pérdida $L$ y una matriz de diseño $X$ con covariables $j \in \{1,2,...,p\}$, para cada covariable $j$ se permuta dicha covariable y se calcula la pérdida esperada:
 
 \begin{equation}
 L_{perm}(f)= \mathcal{E}[L(f,(Y,X_1^{perm},X_2))]    
@@ -159,20 +159,20 @@ Otra técnica útil para interpretar modelos de árboles es mediante \textit{Par
 
 \begin{equation}
     \label{eq:pdp}
-\bar{f}(X_z)=\mathcal{E}_{x_l}[\hat{f}(x)]=\int \hat{F}(z,x_l)p(x_l)dx_l    
+\bar{f}(X_S)=\mathcal{E}_{X_C}[\hat{f}(x)]=\int \hat{f}(X_S,X_C)p(X_C)dX_C    
 \end{equation}
 
-donde $\hat{f}(x)$ es el modelo entrenado, $z$ es el subset de variables a las que queremos estimar el efecto, $x_l$ representa todas las otras predicciones (que se mantienen constantes), $p(x_l)$ es la distribución conjunta de todas las otras variables y $\mathcal{E}_{x_l}[.]$ es la esperanza sobre la distribución $x_l$
+donde $\hat{f}(x)$ es el modelo entrenado, $X_S$ es el subset de variables a las que queremos estimar el efecto, $X_C$ representa todas las otras predicciones (que se mantienen constantes), $p(X_C)$ es la distribución conjunta de todas las otras variables y $\mathcal{E}_{X_C}[.]$ es la esperanza sobre la distribución $X_C$
 
-Sin embargo, en la práctica es raro conocer $p(x_l)$ por lo que se utiliza el siguiente procedimiento:
+Sin embargo, en la práctica es raro conocer $p(X_C)$ por lo que se utiliza el siguiente procedimiento:
  
 \begin{equation}
-\bar{f}(z)\approx\frac{1}{n}\sum_{i=1}^{n}\hat{f}(z,x_l^{i})
+\bar{f}(X_S)\approx\frac{1}{n}\sum_{i=1}^{n}\hat{f}(X_S,x_{C}^{i})
 \end{equation}
 
-Cuyo algoritmo sería, para cada observación $i$ en la muestra, tomar los valores originales de las variables no seleccionadas $x_l^{i}$. Posteriormente, se utilizan los valores modificados de las variables z en cada $x_l^{i}$ dentro del modelo $\hat{F}$ para obtener las predicciones $\hat F(z,x_l^{i})$. Finalmente, se promedian las predicciones para $i=1,2,...,n$.
+Cuyo algoritmo sería, para cada observación $i$ en la muestra, tomar los valores originales de las variables no seleccionadas $x_{C}^{i}$. Posteriormente, se utilizan los valores modificados de las variables $X_S$ en cada $x_{C}^{i}$ dentro del modelo $\hat{f}$ para obtener las predicciones $\hat{f}(X_S,x_{C}^{i})$. Finalmente, se promedian las predicciones para $i=1,2,...,n$.
 
-Cabe aclarar que al modificar solamente una variable y dejar el resto como estaban, se esta asumiendo que las variables $z$ son independientes a todo el resto. Algo que puede o no ser cierto dependiendo de la naturaleza de los datos. Además, al cambiar los valores de las variables a evaluar se podrían dar combinaciones poco realistas en la practica.
+Cabe aclarar que al modificar solamente una variable y dejar el resto como estaban, se esta asumiendo que las variables $X_S$ son independientes a todo el resto. Algo que puede o no ser cierto dependiendo de la naturaleza de los datos. Además, al cambiar los valores de las variables a evaluar se podrían dar combinaciones poco realistas en la practica.
 
 Con el fin de ejemplificar los gráficos de dependencia parcial se entrenó un modelo de \textit{Gradient Boosting Machine} con 100 árboles con el fin de predecir la edad del \textit{Abalone} en función de distintas medidas físicas. Una vez entrenado el modelo, se puede ver en la \autoref{fig:partial-dependence-plot} el efecto del peso total en la edad.
 
@@ -191,10 +191,10 @@ Sin embargo, como se mencionó anteriormente, los PDPs sufren problemas cuando l
 Los ICE fueron introducidos por \cite{Goldstein2015} como una técnica para estimar el efecto de una covariable sobre la variable de respuesta, más formalmente lo que se busca estimar es:
 
 \begin{equation}
-f_i(x_z)=E[Y|X_z=x_z,X_{-z}=x_{-z}^{i}]    
+f_i(X_S)=E[Y|X_S=x_S,X_{C}=x_{C}^{i}]    
 \end{equation}
 
-Es decir, en lugar de calcular el efecto promedio de $z$ sobre $y$ calculando el promedio de $f(z,x_{-z})$ para todas las observaciones, se calcula el efecto de $z$ para cada observación $i$ manteniendo el resto de las variables constantes. De esta manera se puede obtener una estimación del efecto de $z$ para cada observación y no solo un promedio, teniendo así una visión más detallada.
+Es decir, en lugar de calcular el efecto promedio de $X_S$ sobre $y$ calculando el promedio de $f(X_S,X_C)$ para todas las observaciones, se calcula el efecto de $X_S$ para cada observación $i$ manteniendo el resto de las variables constantes. De esta manera se puede obtener una estimación del efecto de $X_S$ para cada observación y no solo un promedio, teniendo así una visión más detallada.
 
 De esta forma, se podrían entender los PDPs como el promedio de los ICE. Dado que mientras el primero se calcula mediante la distribución marginal de las variables, los segundos lo hacen utilizando la distribución condicional.
 
@@ -209,13 +209,13 @@ Cabe destacar que PDP y ICE deberían ser similares cuando las variables son ind
 
 Como se puede ver en la \autoref{fig:ice-plot}, los ICE son mucho más variables que los PDP, lo que permite tener una visión más detallada del efecto de la variable en cuestión. Sin embargo, se puede ver que los ICE tienen distintas ordenadas al origen, lo que dificulta la comparación entre distintas variables y la identificación de efectos heterogéneos.
 
-Para solventar este problema, se puede utilizar el método de \textit{Centered ICE} que consiste en centrar los ICE en algún punto de la distribución de la variable (los autores de este método sugieren el valor mínimo o máximo de la variable para tener gráficos sencillos de interpretar). Más formalmente se busca centrar cada curva $\hat{f}_i$ en un valor de referencia $(x^*,x_{ci})$ tal que:
+Para solventar este problema, se puede utilizar el método de \textit{Centered ICE} que consiste en centrar los ICE en algún punto de la distribución de la variable (los autores de este método sugieren el valor mínimo o máximo de la variable para tener gráficos sencillos de interpretar). Más formalmente se busca centrar cada curva $\hat{f}_i$ en un valor de referencia $(x^*,x_{Ci})$ tal que:
 
 \begin{equation}
-\hat{f}_{cent}^{(i)}=\hat{f}^{(i)}-1\hat{f}(x^*,x_{ci})
+\hat{f}_{cent}^{(i)}(x_S) = \hat{f}(x_S, x_{Ci}) - \hat{f}(x^*, x_{Ci})
 \end{equation}
 
-A modo de ejemplo, si $x^*$ es el valor mínimo de $x_s$ todas las curvas empiezan en cero, por otro lado si es el máximo se puede ver ver el efecto acumulado de $x_s$ sobre $\hat{f}$ relativo al caso base.
+A modo de ejemplo, si $x^*$ es el valor mínimo de $x_S$ todas las curvas empiezan en cero, por otro lado si es el máximo se puede ver el efecto acumulado de $x_S$ sobre $\hat{f}$ relativo al caso base.
 
 A modo de ejemplo, en la \autoref{fig:centered-ice-plot} se puede ver el \textit{Centered ICE} para la misma variable de antes. En este caso $x^*$ es el valor mínimo por lo que todas las curvas empiezan en cero. También, se puede ver en rojo la curva de PDP centrada.
 
@@ -228,13 +228,13 @@ A modo de ejemplo, en la \autoref{fig:centered-ice-plot} se puede ver el \textit
 
 
 \subsection{\textit{Derivative ICE}}
-Con el fin de seguir identificando las interacciones entre las variables los autores proponen calcular los gráficos de la derivada parcial de $\hat{f}$ con respecto a $x_s$. A modo de formalizarlo, se asume independencia entre $x_s$ y el resto de las covariables, por lo que $\hat{f}$ puede ser escrita como:
+Con el fin de seguir identificando las interacciones entre las variables los autores proponen calcular los gráficos de la derivada parcial de $\hat{f}$ con respecto a $x_S$. A modo de formalizarlo, se asume independencia entre $x_S$ y el resto de las covariables, por lo que $\hat{f}$ puede ser escrita como:
 
 \begin{equation}
-\hat{f}(x)=\hat{f}(x_s,x_c)=g(x_s)+h(x_c) \Rightarrow \frac{\partial \hat{f}(x)}{\partial x_s}=g'(x_s)    
+\hat{f}(x)=\hat{f}(x_S,x_C)=g(x_S)+h(x_C) \Rightarrow \frac{\partial \hat{f}(x)}{\partial x_S}=g'(x_S)    
 \end{equation}
 
-lo cual significa que la relación entre $x_s$ y $\hat{f}$ no depende de $x_c$. Cuando esto se cumple todas las líneas deberían ser equivalentes.
+lo cual significa que la relación entre $x_S$ y $\hat{f}$ no depende de $x_C$. Cuando esto se cumple todas las líneas deberían ser equivalentes.
 
 \subsubsection{Causalidad}
 
@@ -243,13 +243,13 @@ Pese a que \cite{pearl_2018} menciona por qué los modelos de aprendizaje autom�
 Los autores se basan en que \autoref{eq:pdp} es igual al \textit{backdoor adjustment} definido por \cite{Pearl1993} como
 \begin{equation}
     \label{eq:back-door}
-P(Y|do(X_s=x_s))=\int P(Y|X_s=x_s, X_c=x_c)dP(x_c)    
+P(Y|do(X_S=x_S))=\int P(Y|X_S=x_S, X_C=x_C)dP(x_C)    
 \end{equation}
 
-donde $P(Y|do(X_s=x_s))$ se refiere a la distribución de $Y$ luego de hacer un intervención en $X_s$. Esta formula permite identificar el efecto causal de $X_s$ en $Y$ siempre y cuando se cumpla cuando (1) ningún nodo $X_c$ sea dependiente descendiente de $X_s$ y (2) que $X_c$ 'bloquee' cualquier camino "back-door" entre $X_s$ e $Y$ que se puede pensar intuitivamente como una causa común entre $X_s$ e $Y$ que impide entender el efecto causal de $X_s$.
+donde $P(Y|do(X_S=x_S))$ se refiere a la distribución de $Y$ luego de hacer un intervención en $X_S$. Esta formula permite identificar el efecto causal de $X_S$ en $Y$ siempre y cuando se cumpla cuando (1) ningún nodo $X_C$ sea dependiente descendiente de $X_S$ y (2) que $X_C$ 'bloquee' cualquier camino "back-door" entre $X_S$ e $Y$ que se puede pensar intuitivamente como una causa común entre $X_S$ e $Y$ que impide entender el efecto causal de $X_S$.
 
 \begin{equation}
-E[Y|do(X_s=x_s)]=\int E[Y|X_s=x_s, X_c=x_c]dP(x_c)
+E[Y|do(X_S=x_S)]=\int E[Y|X_S=x_S, X_C=x_C]dP(x_C)
 \end{equation}
 
 Ahora si partimos de $\hat{f}(x)$ la función aprendida por el modelo, que aproxima la expectativa condicional, es decir,  

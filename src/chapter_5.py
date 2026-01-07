@@ -1,12 +1,14 @@
 import logging
+import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib.figure import Figure
+from sklearn.base import BaseEstimator
 from sklearn.ensemble import GradientBoostingRegressor, RandomForestRegressor
 from sklearn.inspection import PartialDependenceDisplay, permutation_importance
 from sklearn.linear_model import LinearRegression
@@ -14,6 +16,7 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.tree import DecisionTreeRegressor
 from ucimlrepo import fetch_ucirepo
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -85,16 +88,12 @@ def fetch_split_ucirepo(
 
 def evaluate_model(
     y_true: np.ndarray, y_pred: np.ndarray, model_name: str
-) -> Dict[str, float | str]:
+) -> Dict[str, Union[float, str]]:
     """Compute evaluation metrics for a model."""
     mse = mean_squared_error(y_true, y_pred)
     rmse = float(np.sqrt(mse))
     mae = float(mean_absolute_error(y_true, y_pred))
     r2 = float(r2_score(y_true, y_pred))
-
-    logger.info(
-        f"{model_name} -> RMSE: {rmse:.4f}, MAE: {mae:.4f}, R²: {r2:.4f}"
-    )
 
     return {
         'Model': model_name,
@@ -131,10 +130,24 @@ def corr_calc(df: pd.DataFrame, save_path: Optional[Path] = None) -> Figure:
 
 
 def init_models(
-    X_train: pd.DataFrame, y_train: np.ndarray
-) -> Tuple[LinearRegression, DecisionTreeRegressor, RandomForestRegressor, GradientBoostingRegressor]:
-    """Train baseline and tuned models and return best estimators."""
-    logger.info("Initializing and fitting models (LR, DT, RF, GBM)...")
+    X_train: pd.DataFrame, y_train: np.ndarray, focus_model: Optional[str] = None
+) -> Tuple[
+    LinearRegression,
+    DecisionTreeRegressor,
+    RandomForestRegressor,
+    GradientBoostingRegressor,
+    List[Tuple[Dict[str, Any], BaseEstimator]]
+]:
+    """
+    Train baseline and tuned models.
+    
+    If 'focus_model' is provided ('gbm' or 'rf'), it also extracts and returns the 
+    top 5 hyperparameter configurations for that model type.
+    
+    Returns:
+        lr_model, dt_best, rf_best, gbm_best, top_5_models
+    """
+    logger.info(f"Initializing and fitting models (LR, DT, RF, GBM). Focus: {focus_model}")
 
     y_train_1d = y_train.ravel()
 
@@ -167,8 +180,38 @@ def init_models(
     gbm_grid.fit(X_train, y_train_1d)
     gbm_best = gbm_grid.best_estimator_
     logger.info("Gradient Boosting model fitted")
+    
+    top_5_models: List[Tuple[Dict[str, Any], BaseEstimator]] = []
 
-    return lr_model, dt_best, rf_best, gbm_best
+    if focus_model:
+        target_grid = None
+        ModelClass = None
+        
+        if focus_model.lower() == 'gbm':
+            target_grid = gbm_grid
+            ModelClass = GradientBoostingRegressor
+        elif focus_model.lower() == 'rf':
+            target_grid = rf_grid
+            ModelClass = RandomForestRegressor
+            
+        if target_grid and ModelClass:
+            # cv_results_ is a dict, convert to df for easier sorting
+            results_df = pd.DataFrame(target_grid.cv_results_)
+            # Sort by rank_test_score (1 is best)
+            top_5_results = results_df.nsmallest(5, 'rank_test_score')
+            
+            logger.info(f"Extracting top 5 configurations for {focus_model}...")
+            
+            for rank, (_, row) in enumerate(top_5_results.iterrows(), 1):
+                params = row['params']
+                logger.info(f"Rank {rank}: {params}")
+                
+                # Re-instantiate and fit on full train data
+                model = ModelClass(**params, random_state=42)
+                model.fit(X_train, y_train_1d)
+                top_5_models.append((params, model))
+
+    return lr_model, dt_best, rf_best, gbm_best, top_5_models
 
 def evaluate_models(
     y_test: np.ndarray,
@@ -194,6 +237,42 @@ def evaluate_models(
     metrics_df = pd.DataFrame([lm_metrics, dt_metrics, rf_metrics, gbm_metrics])
     logger.info(f"\nModel performance summary:\n{metrics_df.to_string(index=False)}")
     return metrics_df
+
+def evaluate_top_5(
+    top_5_models: List[Tuple[Dict[str, Any], BaseEstimator]],
+    X_test: pd.DataFrame,
+    y_test: np.ndarray,
+    base_name: str
+) -> pd.DataFrame:
+    """Evaluate list of top 5 models."""
+    metrics_list = []
+    for i, (params, model) in enumerate(top_5_models, 1):
+        pred = model.predict(X_test)
+        metrics = evaluate_model(y_test, pred, f"{base_name} Top {i}")
+        # Add params as string for reference
+        metrics['Params'] = str(params)
+        metrics['Rank'] = i
+        metrics_list.append(metrics)
+    
+    df = pd.DataFrame(metrics_list)
+    return df
+
+def get_feature_importances(
+    model: BaseEstimator, 
+    feature_names: List[str]
+) -> pd.DataFrame:
+    """Extract feature importances from model."""
+    if hasattr(model, 'feature_importances_'):
+        importances = model.feature_importances_
+    else:
+        # Fallback or empty if not supported (linear regression typically uses coefs but strict 'importance' varies)
+        return pd.DataFrame()
+        
+    df = pd.DataFrame({
+        'Feature': feature_names,
+        'Importance': importances
+    }).sort_values('Importance', ascending=False)
+    return df
 
 def permutation_importance_plot(
     best_model, X_test: pd.DataFrame, y_test: np.ndarray, save_path: Optional[Path] = None
@@ -226,7 +305,7 @@ def permutation_importance_plot(
     )
     ax.set_xlabel('Permutation Importance')
     ax.set_ylabel('Features')
-    ax.set_title('Feature Importance for Gradient Boosting Model')
+    ax.set_title('Feature Importance')
     plt.tight_layout()
 
     if save_path:
@@ -266,7 +345,7 @@ def partial_dependence_plot(
             axs[i, j].set_title(f'PDP of {feature_titles[i]}{centered_text}')
             axs[i, j].set_ylabel('Partial Dependence')
 
-    plt.suptitle('Partial Dependence Plots for Gradient Boosting Model', fontsize=14)
+    plt.suptitle('Partial Dependence Plots', fontsize=14)
     plt.tight_layout(rect=(0, 0, 1, 0.95))
 
     if save_path:
@@ -275,7 +354,72 @@ def partial_dependence_plot(
 
     return fig
 
-def airfoil_self_noise():
+def export_results_latex(
+    all_results: Dict[str, Dict[str, Any]],
+    output_path: Path
+):
+    """
+    Export all results to a single LaTeX file.
+    
+    all_results structure:
+    {
+        'DatasetName': {
+            'metrics': pd.DataFrame (top 5 metrics),
+            'importances': pd.DataFrame (feature importances of best model #1)
+        }
+    }
+    """
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(r"\section{Model Analysis Results}" + "\n\n")
+        
+        for dataset_name, data in all_results.items():
+            f.write(f"\\subsection{{{dataset_name}}}" + "\n")
+            
+            # Metrics Table
+            metrics_df = data['metrics']
+            f.write(r"\subsubsection{Top 5 Models Performance}" + "\n")
+            f.write(r"\begin{table}[H]" + "\n")
+            f.write(r"\centering" + "\n")
+            f.write(r"\begin{tabular}{|c|l|c|c|c|}" + "\n")
+            f.write(r"\hline" + "\n")
+            f.write(r"Rank & Params & RMSE & MAE & $R^2$ \\" + "\n")
+            f.write(r"\hline" + "\n")
+            
+            for _, row in metrics_df.iterrows():
+                # Escape special chars in params string if necessary (minimal here)
+                params_str = row['Params'].replace("_", r"\_").replace("'", "").replace("{", "").replace("}", "")
+                # Truncate params if too long?
+                
+                f.write(f"{row['Rank']} & {params_str} & {row['RMSE']:.4f} & {row['MAE']:.4f} & {row['R²']:.4f} \\\\" + "\n")
+            
+            f.write(r"\hline" + "\n")
+            f.write(r"\end{tabular}" + "\n")
+            f.write(f"\\caption{{Performance metrics for top 5 models - {dataset_name}}}" + "\n")
+            f.write(r"\label{tab:metrics_" + dataset_name.lower().replace(" ", "_") + r"}" + "\n")
+            f.write(r"\end{table}" + "\n\n")
+            
+            # Importance Table
+            imp_df = data['importances']
+            if not imp_df.empty:
+                f.write(r"\subsubsection{Feature Importance (Best Model)}" + "\n")
+                f.write(r"\begin{table}[H]" + "\n")
+                f.write(r"\centering" + "\n")
+                f.write(r"\begin{tabular}{|l|c|}" + "\n")
+                f.write(r"\hline" + "\n")
+                f.write(r"Feature & Importance \\" + "\n")
+                f.write(r"\hline" + "\n")
+                
+                for _, row in imp_df.iterrows():
+                    feat_name = str(row['Feature']).replace("_", r"\_")
+                    f.write(f"{feat_name} & {row['Importance']:.4f} \\\\" + "\n")
+                    
+                f.write(r"\hline" + "\n")
+                f.write(r"\end{tabular}" + "\n")
+                f.write(f"\\caption{{Feature importance for best model - {dataset_name}}}" + "\n")
+                f.write(r"\label{tab:imp_" + dataset_name.lower().replace(" ", "_") + r"}" + "\n")
+                f.write(r"\end{table}" + "\n\n")
+
+def airfoil_self_noise() -> Dict[str, Any]:
     logger.info("Running Airfoil Self-Noise pipeline...")
 
     air_X_train, air_X_test, air_y_train, air_y_test, air_df_train, _ = fetch_split_ucirepo(
@@ -288,28 +432,37 @@ def airfoil_self_noise():
     air_X_train = air_X_train.drop(columns='attack-angle')
     air_X_test = air_X_test.drop(columns='attack-angle')
 
-    air_lr_best, air_dt_best, air_rf_best, air_gbm_best = init_models(air_X_train, air_y_train)
+    # Focus on GBM for Airfoil
+    _, _, _, air_gbm_best, top_5 = init_models(air_X_train, air_y_train, focus_model='gbm')
 
-    metrics_df = evaluate_models(
-        air_y_test, air_dt_best, air_rf_best, air_gbm_best, air_lr_best, air_X_test
-    )
-    metrics_df.to_csv(OUTPUT_DIR / 'airfoil_metrics.csv', index=False)
+    # Evaluate Top 5
+    top_5_metrics = evaluate_top_5(top_5, air_X_test, air_y_test, "GBM")
+    
+    # Get importances of the #1 model (rank 1)
+    best_model_params, best_model_obj = top_5[0]
+    importances_df = get_feature_importances(best_model_obj, air_X_train.columns)
 
+    # Standard existing plots
     pi_fig = permutation_importance_plot(
-        air_gbm_best, air_X_test, air_y_test, OUTPUT_DIR / 'airfoil_perm_importance.pdf'
+        best_model_obj, air_X_test, air_y_test, OUTPUT_DIR / 'airfoil_perm_importance.pdf'
     )
     plt.close(pi_fig)
 
     pdp_fig = partial_dependence_plot(
-        air_gbm_best,
+        best_model_obj,
         air_X_test,
         ['frequency', 'suction-side-displacement-thickness'],
         ['Frequency', 'Suction-side-displacement-thickness'],
         OUTPUT_DIR / 'airfoil_pdp.pdf',
     )
     plt.close(pdp_fig)
+    
+    return {
+        'metrics': top_5_metrics,
+        'importances': importances_df
+    }
 
-def concrete_data():
+def concrete_data() -> Dict[str, Any]:
     logger.info("Running Concrete dataset pipeline...")
 
     (
@@ -324,25 +477,16 @@ def concrete_data():
     corr_fig = corr_calc(concrete_df_train, OUTPUT_DIR / 'concrete_corr.pdf')
     plt.close(corr_fig)
 
-    (
-        concrete_lr_model,
-        concrete_dt_best,
-        concrete_rf_best,
-        concrete_gbm_best,
-    ) = init_models(concrete_X_train, concrete_y_train)
+    # Focus on GBM for Concrete
+    _, _, _, concrete_gbm_best, top_5 = init_models(concrete_X_train, concrete_y_train, focus_model='gbm')
 
-    metrics_df = evaluate_models(
-        concrete_y_test,
-        concrete_dt_best,
-        concrete_rf_best,
-        concrete_gbm_best,
-        concrete_lr_model,
-        concrete_X_test,
-    )
-    metrics_df.to_csv(OUTPUT_DIR / 'concrete_metrics.csv', index=False)
+    top_5_metrics = evaluate_top_5(top_5, concrete_X_test, concrete_y_test, "GBM")
+    
+    best_model_params, best_model_obj = top_5[0]
+    importances_df = get_feature_importances(best_model_obj, concrete_X_train.columns)
 
     pi_fig = permutation_importance_plot(
-        concrete_gbm_best,
+        best_model_obj,
         concrete_X_test,
         concrete_y_test,
         OUTPUT_DIR / 'concrete_perm_importance.pdf',
@@ -350,15 +494,20 @@ def concrete_data():
     plt.close(pi_fig)
 
     pdp_fig = partial_dependence_plot(
-        concrete_gbm_best,
+        best_model_obj,
         concrete_X_test,
         ['Age', 'Cement'],
         ['Age', 'Cement'],
         OUTPUT_DIR / 'concrete_pdp.pdf',
     )
     plt.close(pdp_fig)
+    
+    return {
+        'metrics': top_5_metrics,
+        'importances': importances_df
+    }
 
-def wine_data():
+def wine_data() -> Dict[str, Any]:
     logger.info("Running Wine Quality dataset pipeline...")
 
     wine_X_train, wine_X_test, wine_y_train, wine_y_test, wine_df_train, _ = fetch_split_ucirepo(
@@ -371,33 +520,32 @@ def wine_data():
     wine_X_train = wine_X_train.drop(columns='free_sulfur_dioxide')
     wine_X_test = wine_X_test.drop(columns='free_sulfur_dioxide')
 
-    wine_lr_model, wine_dt_best, wine_rf_best, wine_gbm_best = init_models(
-        wine_X_train, wine_y_train
-    )
+    # Focus on RF for Wine
+    _, _, _, _, top_5 = init_models(wine_X_train, wine_y_train, focus_model='rf')
 
-    metrics_df = evaluate_models(
-        wine_y_test,
-        wine_dt_best,
-        wine_rf_best,
-        wine_gbm_best,
-        wine_lr_model,
-        wine_X_test,
-    )
-    metrics_df.to_csv(OUTPUT_DIR / 'wine_metrics.csv', index=False)
+    top_5_metrics = evaluate_top_5(top_5, wine_X_test, wine_y_test, "Random Forest")
+    
+    best_model_params, best_model_obj = top_5[0]
+    importances_df = get_feature_importances(best_model_obj, wine_X_train.columns)
 
     pi_fig = permutation_importance_plot(
-        wine_rf_best, wine_X_test, wine_y_test, OUTPUT_DIR / 'wine_perm_importance.pdf'
+        best_model_obj, wine_X_test, wine_y_test, OUTPUT_DIR / 'wine_perm_importance.pdf'
     )
     plt.close(pi_fig)
 
     pdp_fig = partial_dependence_plot(
-        wine_rf_best,
+        best_model_obj,
         wine_X_test,
         ['alcohol', 'volatile_acidity'],
         ['Alcohol', 'Volatile Acidity'],
         OUTPUT_DIR / 'wine_pdp.pdf',
     )
     plt.close(pdp_fig)
+    
+    return {
+        'metrics': top_5_metrics,
+        'importances': importances_df
+    }
 
 def main():
     """Run all dataset pipelines sequentially."""
@@ -405,12 +553,17 @@ def main():
     logger.info("Starting Application Pipelines")
     logger.info("=" * 60)
 
-    airfoil_self_noise()
-    concrete_data()
-    wine_data()
+    results = {}
+    
+    results['Airfoil Self Noise'] = airfoil_self_noise()
+    results['Concrete Strength'] = concrete_data()
+    results['Wine Quality'] = wine_data()
+    
+    latex_path = OUTPUT_DIR / 'analysis_results.tex'
+    export_results_latex(results, latex_path)
 
     logger.info("=" * 60)
-    logger.info("All pipelines completed. Outputs saved to output/")
+    logger.info(f"All pipelines completed. Analysis saved to {latex_path}")
     logger.info("=" * 60)
 
 

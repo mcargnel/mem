@@ -1,12 +1,18 @@
-En esta sección se utilizarán tres conjuntos de datos para probar algunas de las técnicas descriptas anteriormente. En particular, se utilizará \textit{Airfoil Self-Noise}, \textit{Concrete Comprehensive Strength} y \textit{Wine Quality}. Para todos los casos se realizará un breve análisis exploratorio, seguido por una búsqueda de hiperparámetros con el fin de encontrar la combinación de los mismos que minimice el error de validación cruzada en la muestra de entrenamiento. Dicho subconjunto de datos tendrá el 80\% de los datos. Una vez encontrada la combinación óptima de hiperparámetros se evaluarán los modelos en la muestra de testeo, para luego calcular PFI y PDP. Cabe aclarar que los modelos a entrenar y comparar serán una regresión lineal, un árbol de decisión, \textit{Random Forest} y \textit{Gradient Boosting Machines}. Las métricas que se usarán para evaluar los modelos son: Error Cuadrático Medio (RMSE), Error Absoluto Medio (MAE) y Coeficiente de Determinación (R²). El RMSE mide la raíz cuadrada del promedio de los errores al cuadrado: $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$, el MAE mide el promedio de los errores absolutos: $\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$, y el $R^2$ indica la proporción de la varianza en la variable dependiente que es predecible a partir de las variables independientes: $\text{R}^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}$.
+En esta sección se utilizarán tres conjuntos de datos para probar algunas de las técnicas descriptas anteriormente. En particular, se utilizará \textit{Airfoil Self-Noise}, \textit{Concrete Comprehensive Strength} y \textit{Wine Quality}. Para todos los casos se realizará un breve análisis exploratorio, seguido por una búsqueda de hiperparámetros con el fin de encontrar la combinación de los mismos que minimice el error de validación cruzada en la muestra de entrenamiento. Dicho subconjunto de datos tendrá el 80\% de los datos. Una vez encontrada la combinación óptima de hiperparámetros se evaluarán los modelos en la muestra de testeo, para luego calcular PFI y PDP. 
+
+Cabe aclarar que los modelos a entrenar y comparar serán una regresión lineal, un árbol de decisión, \textit{Random Forest} y \textit{Gradient Boosting Machines}. Las métricas que se usarán para evaluar los modelos son: Error Cuadrático Medio (RMSE), Error Absoluto Medio (MAE) y Coeficiente de Determinación (R²). El RMSE mide la raíz cuadrada del promedio de los errores al cuadrado: $\text{RMSE} = \sqrt{\frac{1}{n}\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}$, el MAE mide el promedio de los errores absolutos: $\text{MAE} = \frac{1}{n}\sum_{i=1}^{n}|y_i - \hat{y}_i|$, y el $R^2$ indica la proporción de la varianza en la variable dependiente que es predecible a partir de las variables independientes: $\text{R}^2 = 1 - \frac{\sum_{i=1}^{n}(y_i - \hat{y}_i)^2}{\sum_{i=1}^{n}(y_i - \bar{y})^2}$.
 
 En todos los casos para los árboles de decisión, se testearán los hiperparámetros: profundidad máxima (10, 20, 30), mínimo número de observaciones para hacer una división (2, 5, 10) y mínimo número de observaciones por hoja (1, 2, 4). Para \textit{Random Forest}, se testeará el hiperparámetro número de árboles (100 a 2000 en incrementos de 100). Para \textit{Gradient Boosting Machines}, se testearán los hiperparámetros número de árboles (100 a 2000 en incrementos de 100) y \textit{learning rate} (0.01, 0.1, 0.2).
 
-Cabe aclarar que el objetivo de las aplicaciones no es llegar a modelos óptimos, ni entender realmente cómo las variables interaccionan. Sino simplemente demostrar algunas de las metodologías descritas en los capítulos anteriores.
+Finalmente, se evaluará la consistencia de los resultados obtenidos en términos de PFI. Para ello, se seleccionarán los cinco modelos con menor error en la muestra de validación cruzada y se calculará el PFI para cada uno de ellos. Idealmente, se esperaría que los resultados sean similares entre los modelos; de lo contrario, se podría estar ante un caso de \textit{Rashomon Sets}, es decir, modelos con un rendimiento predictivo similar pero con interpretaciones diferentes.
 
+Cabe aclarar que el objetivo de las aplicaciones no es llegar a modelos óptimos, ni entender realmente cómo las variables interaccionan. Sino simplemente demostrar algunas de las metodologías descritas en los capítulos anteriores y presentar un \textit{pipeline} básico de como aplicar estas metodologías.
+
+%#TODO: add rashomon sets test. picking top N models and running PFI to see consistency
+%#TODO: mejorar la redaccion y aclarar bien cual es la variable dependiente en cada caso
 \section{\textit{Airfoil Self-Noise}}
 
-Este conjunto de datos pertenece a la NASA y fue obtenido a partir de una serie de pruebas aerodinámicas y acústicas de secciones de palas de perfiles aerodinámicos bidimensionales y tridimensionales realizadas en un túnel de viento anecoico \cite{airfoil_self-noise_291} . Los datos contienen perfiles aerodinámicos NACA 0012 de diferentes tamaños a diversas velocidades de túnel de viento y ángulos de ataque. La envergadura del perfil aerodinámico y la posición del observador fueron las mismas en todos los experimentos. A continuación vemos una tabla que resume las variables incluidas:
+Este conjunto de datos pertenece a la NASA y fue obtenido a partir de una serie de pruebas aerodinámicas y acústicas de secciones de palas de perfiles aerodinámicos bidimensionales y tridimensionales realizadas en un túnel de viento anecoico \cite{airfoil_self-noise_291} . Los datos contienen perfiles aerodinámicos NACA 0012 de diferentes tamaños a diversas velocidades de túnel de viento y ángulos de ataque. La envergadura del perfil aerodinámico y la posición del observador fueron las mismas en todos los experimentos. A continuación, en la \autoref{tbl:airfoil_variables} se resumen las variables incluidas:
 
 \begin{table}[ht!]
     \centering
@@ -21,7 +27,7 @@ Este conjunto de datos pertenece a la NASA y fue obtenido a partir de una serie 
     \textit{chord-length} & Longitud de cuerda en metros \\
     \textit{free-stream-velocity} & Velocidad de flujo libre en metros por segundo \\
     \textit{suction-side-displacement-thickness} & Espesor de desplazamiento del lado de succión en metros \\
-    \textit{scaled-sound-pressure} & Presión sonora escalada en decibelios (variable dependiente) \\
+    \textit{scaled-sound-pressure} & Presión sonora escalada en decibelios (var dep) \\
     \hline
     \end{tabular}
 \end{table}
@@ -84,7 +90,7 @@ En resumen, para el conjunto de datos de \textit{Airfoil}, el modelo \textit{Gra
 
 \section{\textit{Concrete Compressive Strength}}
 
-A continuación se realiza el mismo análisis para el conjunto de datos \textit{Concrete Compressive Strength} \cite{concrete_compressive_strength_165} que cuenta con 1030 observaciones distribuidas entre 9 variables. A continuación pueden verse todas las variables incluidas:
+A continuación se realiza el mismo análisis para el conjunto de datos \textit{Concrete Compressive Strength} \cite{concrete_compressive_strength_165} que cuenta con 1030 observaciones distribuidas entre 9 variables. A continuación, en la \autoref{tbl:concrete_variables} se resumen todas las variables incluidas:
  
 \begin{table}[ht!]
     \centering
@@ -102,7 +108,7 @@ A continuación se realiza el mismo análisis para el conjunto de datos \textit{
     Agregado grueso & Cantidad de agregado grueso (kg/m³) \\
     Agregado fino & Cantidad de agregado fino (kg/m³) \\
     Edad & Edad del concreto en días \\
-    Resistencia a la compresión del concreto & Resistencia a la compresión del concreto (variable dependiente) \\
+    Resistencia & Resistencia a la compresión del concreto (var dep) \\
     \hline
     \end{tabular}
 \end{table}
@@ -158,7 +164,7 @@ En conclusión, el análisis del concreto mostró que la edad y el cemento son l
 
 \section{\textit{Wine Quality}}
 
-Estos datos son los resultados de un análisis químico de vinos cultivados en la misma región de Italia pero derivados de tres variedades diferentes. El análisis determinó las cantidades de 13 componentes encontrados en cada uno de los tres tipos de vinos. El conjunto de datos se obtuvo de \cite{wine_109} y contiene 4898 observaciones. A continuación se presenta una tabla con las variables del conjunto de datos y su significado:
+Estos datos son los resultados de un análisis químico de vinos cultivados en la misma región de Italia pero derivados de tres variedades diferentes. El análisis determinó las cantidades de 13 componentes encontrados en cada uno de los tres tipos de vinos. El conjunto de datos se obtuvo de \cite{wine_109} y contiene 4898 observaciones. A continuación, en la \autoref{tbl:wine_variables} se resume una tabla con las variables del conjunto de datos y su significado:
  
 \begin{table}[ht!]
     \centering
@@ -173,7 +179,7 @@ Estos datos son los resultados de un análisis químico de vinos cultivados en l
     \textit{citric\_acid} & Ácido cítrico presente en el vino \\
     \textit{residual\_sugar} & Cantidad de azúcar residual en el vino \\
     \textit{chlorides} & Contenido de cloruros (sal) en el vino \\
-    \textit{free\_sulfur\_dioxide} & Dióxido de azufre libre en el vino (conservante) \\
+    \textit{free\_sulfur\_dioxide} & Dióxido de azufre libre en el vino (var. dep.) \\
     \textit{total\_sulfur\_dioxide} & Dióxido de azufre total en el vino (libre + combinado) \\
     \textit{density} & Densidad del vino \\
     \textit{pH} & Nivel de acidez/alcalinidad del vino (escala pH) \\
@@ -183,7 +189,6 @@ Estos datos son los resultados de un análisis químico de vinos cultivados en l
     \hline
     \end{tabular}
 \end{table}
-
 
 En la \autoref{fig:wine_corr} puede verse la correlación entre las variables del conjunto de datos. En particular, se destaca la alta correlación entre '\textit{total-sulfur-dioxide}' y '\textit{free-sulfur-dioxide}', por lo que se decidió eliminar la segunda.
 
