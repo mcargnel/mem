@@ -1,54 +1,67 @@
-Dentro del modelado estadístico se destacan dos objetivos principales: Predecir e Explicar. Esta distinción puede parecer filosófica en un primer momento, pero es de interés estudiarla dado que genera diferencias metodológicas importantes que llevan a los investigadores y practicantes a optar por técnicas y modelos muy distintos para alcanzar sus objetivos.
+Este capítulo introduce los conceptos fundamentales del modelado estadístico, diferenciando entre los objetivos de predicción y explicación. Se analiza el compromiso o \textit{trade-off} existente entre ambos y se propone el uso de técnicas de aprendizaje automático interpretable, específicamente en el contexto de ensambles de árboles. Finalmente, se detalla la estructura del trabajo y la notación utilizada.
+
+Dentro del modelado estadístico se destacan dos objetivos principales: predecir y explicar. Esta distinción puede parecer filosófica en un primer momento, pero es de interés estudiarla dado que genera diferencias metodológicas importantes que llevan a los investigadores y practicantes a optar por técnicas y modelos muy distintos para alcanzar sus objetivos.
 
 A continuación, se estudian las dos principales corrientes descritas en \cite{to_explain_or_to_predict}.
 
 \section{Modelado Explicativo}
 
+El modelado explicativo se centra en la comprensión de las relaciones subyacentes entre las variables, priorizando la interpretabilidad y el sustento teórico.
+
 Cuando el interés es interpretar o explicar, los estudios se centran en entender el efecto que tienen variables explicativas $(X)$ en una variable de respuesta $(Y)$. Este tipo de estudios tratan de emplear modelos más simples para que sea más sencillo entender cómo cada covariable se relaciona con la variable de respuesta. En estos casos, típicamente se utilizan regresiones lineales por su simplicidad.
 
-Generalmente esta clase de modelado se utiliza mucho en las ciencias sociales, existe una teoría muy fuerte por detrás que sustenta los modelos. En definitiva, se puede considerar que los modelos se utilizan con el objetivo de testear las relaciones causales entre las variables.
+Generalmente esta clase de modelado se utiliza mucho en las ciencias sociales, donde existe una teoría muy fuerte por detrás que sustenta los modelos. En definitiva, se puede considerar que los modelos se utilizan con el objetivo de testear las relaciones causales entre las variables. Finalmente, pese a que la capacidad de predicción, medida utilizando alguna métrica como error cuadrático medio o error de clasificación, pasa a un segundo plano, es de interés encontrar modelos que superen un cierto umbral de precisión.
 
-Finalmente, pese a que la capacidad de predicción, medida utilizando alguna métrica como error cuadrático medio o error de clasificación, pasa a un segundo plano es de interés encontrar modelos que pasen un cierto umbral de precisión.
+En resumen, el objetivo principal de este enfoque es validar teorías y cuantificar relaciones, aceptando limitaciones en la capacidad predictiva a cambio de transparencia en el modelo.
 
-\section{Modelado predictivo}
-Cuando el objetivo es predecir el foco cambia y dado que se busca predecir nuevos valores de la variable dependiente $(Y)$, dadas ciertas variables explicativas ó predictoras $(X)$. En estos casos se suelen utilizar modelos más complejos, como ensambles de árboles ó redes neuronales, normalmente asociados al aprendizaje automático.
+\section{Modelado Predictivo}
 
-El procesamiento del lenguaje natural es un caso claro donde el objetivo es predecir. Para esta disciplina se emplean redes neuronales con múltiples capas que hacen muy difícil su interpretación que, de todas formas, pasa a un segundo plano. Como puede esperarse cuando el objetivo es predecir la teoría tampoco juega un rol tan importante.
+Por otro lado, el modelado predictivo se enfoca en la precisión de las estimaciones futuras, a menudo sacrificando la simplicidad del modelo.
 
+Cuando el objetivo es predecir, el foco cambia y se busca estimar nuevos valores de la variable dependiente $(Y)$, dadas ciertas variables explicativas o predictoras $(X)$. En estos casos se suelen utilizar modelos más complejos, como ensambles de árboles o redes neuronales, normalmente asociados al aprendizaje automático. El procesamiento del lenguaje natural es un caso claro donde el objetivo es predecir. Para esta disciplina se emplean redes neuronales con múltiples capas que hacen muy difícil su interpretación que, de todas formas, pasa a un segundo plano. Como puede esperarse, cuando el objetivo es predecir la teoría tampoco juega un rol tan importante.
 
-\section{Trade off entre explicar y predecir}
+En conclusión, este paradigma prioriza la minimización del error de predicción utilizando algoritmos flexibles, donde la comprensión del mecanismo generador de datos es secundaria.
 
-Según lo descrito anteriormente, parece haber un \textit{trade-off} entre predecir y explicar. Es decir, que si el objetivo es predecir se deberían optar por modelos más complejos poco interpretables pero muy flexibles para minimizar lo más posible una métrica de error. Por otra parte si el objetivo es explicar, deberíamos aceptar modelos con baja capacidad predictiva, dado que para aumentar el poder predictivo necesariamente deberíamos complejizar demasiado los modelos, al punto de no poder interpretarlos.
+\section{\textit{Trade-off} entre explicar y predecir}
 
-Entre \textit{trade-off} también puede entenderse (segundo libro Molnar) como que en aplicaciones donde se busca predecir el modelo se adapta a los datos, mientras que cuando se busca explicar los datos (o la realidad) se simplifica para ser explicada por el modelo.
+Existe una tensión inherente entre la capacidad de un modelo para explicar la realidad y su capacidad para predecir nuevos eventos, conocida como el \textit{trade-off} entre interpretabilidad y flexibilidad.
 
-Por lo que es de interés estudiar técnicas que permitan utilizar modelos complejos para explicar el efecto de $X$ sobre $Y$.
+Según lo descrito anteriormente, parece haber un \textit{trade-off} entre predecir y explicar. Es decir, que si el objetivo es predecir se debería optar por modelos más complejos, poco interpretables pero muy flexibles, para minimizar lo más posible una métrica de error. Por otra parte, si el objetivo es explicar, deberíamos aceptar modelos con baja capacidad predictiva, dado que para aumentar el poder predictivo necesariamente deberíamos complejizar demasiado los modelos, al punto de no poder interpretarlos.
+
+Este \textit{trade-off} también puede entenderse como que en aplicaciones donde se busca predecir, el modelo se adapta a los datos, mientras que cuando se busca explicar, los datos (o la realidad) se simplifican para ser explicados por el modelo. Por lo que es de interés estudiar técnicas que permitan utilizar modelos complejos para explicar el efecto de $X$ sobre $Y$.
+
+En síntesis, este compromiso obliga habitualmente a elegir entre modelos simples e interpretables o modelos complejos y precisos, lo que motiva la búsqueda de herramientas que unan ambos mundos.
 
 \section{Aprendizaje automático interpretable}
-Generalmente los modelos de aprendizaje automático destacan por su capacidad predictiva. Sin embargo, muchas veces se consideran cajas negras dado que, debido a su complejidad, es muy difícil responder preguntas como: ¿Qué variables son más importantes? ó ¿Cuál es el efecto de las variables explicativas en la variable de respuesta?
 
-Sin embargo, existe una batería de técnicas que permiten responder estas preguntas e intentar mitigar el \textit{trade-off} descrito anteriormente. Las técnicas que se estudiarán en este trabajo pueden ser consideradas agnósticas al modelo, es decir se asume que el modelo es una caja negra y se aplican luego técnicas para interpretarlo. Esto se utiliza dado que la cantidad de modelos que pueden interpretarse 'directamente' es limitada. Pero al usar estas técnicas se evita tener que restringir tanto la cantidad de modelos a utilizar, pudiendo emplear, por ejemplo, modelos más flexibles.
+El aprendizaje automático interpretable surge como un campo de estudio destinado a dotar de transparencia a los modelos predictivos complejos.
+
+Generalmente los modelos de aprendizaje automático destacan por su capacidad predictiva. Sin embargo, muchas veces se consideran cajas negras dado que, debido a su complejidad, es muy difícil responder preguntas como: ¿Qué variables son más importantes? o ¿Cuál es el efecto de las variables explicativas en la variable de respuesta?
+
+Sin embargo, existe una batería de técnicas que permiten responder estas preguntas e intentar mitigar el \textit{trade-off} descrito anteriormente. Las técnicas que se estudiarán en este trabajo pueden ser consideradas agnósticas al modelo, es decir, se asume que el modelo es una caja negra y se aplican luego técnicas para interpretarlo. Esto se utiliza dado que la cantidad de modelos que pueden interpretarse ``directamente'' es limitada. Pero al usar estas técnicas se evita tener que restringir tanto la cantidad de modelos a utilizar, pudiendo emplear, por ejemplo, modelos más flexibles.
+
+En definitiva, estas metodologías permiten aprovechar el alto rendimiento de los modelos de caja negra sin renunciar a la comprensión de su comportamiento.
 
 \section{Ensambles de árboles como candidatos}
-En este trabajo se decidió estudiar los ensambles de árboles como modelo ya que, junto con técnicas de interpretabilidad, permiten mitigar el \textit{trade-off} entre interpretabilidad y poder predictivo.
-Este modelo se eligió sobre otras alternativas debido a su alto poder predictivo, lo que lo hace muy popular para tareas de predicción. Su popularidad y buen rendimiento resultaron en la disponibilidad de numerosos paquetes en varios lenguajes de programación, lo que facilita su implementación de manera sencilla y eficiente.
 
-Además, dado que los ensambles de árboles se basan en utilizar múltiples arboles de decisión para la predicción, mantienen algunas ventajas de árboles individuales, como la capacidad de modelar las interacciones entre las variables.
+Dentro de los modelos de aprendizaje automático, los ensambles de árboles presentan características ideales para balancear precisión e interpretabilidad.
 
-Cabe destacar que si bien estos modelos pueden utilizarse tanto para clasificación como para regresión, en este trabajo se solo se estudiará la metodología para problemas de regresión. De todas formas, todos los resultados a los que se lleguen son fácilmente adaptables a problemas de generalización.
+En este trabajo se decidió estudiar los ensambles de árboles como modelo ya que, junto con técnicas de interpretabilidad, permiten mitigar el \textit{trade-off} entre interpretabilidad y poder predictivo. Este modelo se eligió sobre otras alternativas debido a su alto poder predictivo, lo que lo hace muy popular para tareas de predicción. Su popularidad y buen rendimiento resultaron en la disponibilidad de numerosos paquetes en varios lenguajes de programación, lo que facilita su implementación de manera sencilla y eficiente. Además, dado que los ensambles de árboles se basan en utilizar múltiples árboles de decisión para la predicción, mantienen algunas ventajas de los árboles individuales, como la capacidad de modelar las interacciones entre las variables.
+
+Cabe destacar que si bien estos modelos pueden utilizarse tanto para clasificación como para regresión, en este trabajo solo se estudiará la metodología para problemas de regresión. De todas formas, todos los resultados a los que se lleguen son fácilmente adaptables a problemas de clasificación. Por lo tanto, los ensambles de árboles constituyen el núcleo del estudio, ofreciendo un equilibrio óptimo para la aplicación de técnicas de interpretación.
 
 \section{Estructura del trabajo}
 
-El trabajo se estructura de la siguiente manera: en el capítulo 2 se hace una revisión de la teoría detrás de los árboles de regresión y clasificación, mencionando el algoritmo que se usa para podarlos, cómo se comportan cuando las variables están correlacionadas y ante la presencia de \textit{outliers}. Terminando con algunas de las limitaciones que llevaron al desarrollo de técnicas más avanzadas.
+El trabajo se estructura de la siguiente manera: en el Capítulo 2 se hace una revisión de la teoría detrás de los árboles de regresión y clasificación, mencionando el algoritmo que se usa para podarlos, cómo se comportan cuando las variables están correlacionadas y ante la presencia de \textit{outliers}. Se finaliza con algunas de las limitaciones que llevaron al desarrollo de técnicas más avanzadas. En el Capítulo 3 se estudian los ensambles de árboles y cómo estos alivian algunas de las limitaciones de los árboles individuales. En particular se profundiza sobre las técnicas \textit{Bagging} y \textit{Boosting}. Luego, en el Capítulo 4, se revisan tres técnicas que permiten interpretar los ensambles de árboles descritos anteriormente. Finalmente, se presenta una aplicación de todo lo descrito anteriormente en el Capítulo 5, seguido por las conclusiones en el Capítulo 6.
 
-En el capitulo 3 se estudian los ensambles de árboles y cómo estos alivian algunas de las limitaciones de los arboles individuales. En particular se profundiza sobre las técnicas \textit{Bagging} y \textit{Boosting}.
-
-Luego, en el capítulo 4, se revisan tres técnicas que permiten interpretar los ensambles de árboles descritos anteriormente.
-
-Finalmente se presenta una aplicación de todo lo descrito anteriormente en la capítulo 5, seguido por las conclusiones en la capítulo 6.
+Esta estructura secuencial guía al lector desde los fundamentos teóricos básicos hacia modelos más complejos y sus técnicas de interpretación, culminando con la aplicación práctica.
 
 \section{Notación}
 
-Sea $P_{XY}$ la distribución conjunta inducida por el proceso generador de datos, donde $X$ es una variable aleatoria p-dimensional e $Y$ es una variable aleatoria unidimensional. El conjunto de datos se denota como $D_n = {(x(1), y(1)), ..., (x(n), y(n))}$, donde $x(i) \in R_p$ e $y(i) \in R$ para $i \in {1, ..., n}$. Para las secciones 2, 3 y 4 se utilizan datos simulados con distribución $\mathcal{U}(-1, 1)$, con $p = 10$ y $n = 1000$. El vector $y$ fue creado de forma tal que no sea lineal y ocurran interacciones entre las variables, además el término de error $\epsilon$ se asumió $\mathcal{N}(0, 1)$. Mientras que en la sección 5 se emplean tres conjuntos de datos reales.
+Para cerrar este capítulo introductorio, se establece la notación matemática que se utilizará de manera consistente a lo largo del documento.
 
-El mapeo verdadero entre características y variable objetivo se denota como $f(X) = E[Y|X = x]$. Para cualquier modelo, denotamos $f: X \rightarrow Y$ como el modelo teórico y $\hat{f}: X \rightarrow Y$ como el modelo ajustado sobre $D_n$, el cual se obtiene minimizando una función de pérdida $L: Y\times R_p \rightarrow R_+^0$. A lo largo del trabajo se estudiarán distintos tipos de modelos, denotados como $f^{tree}$ para árboles de regresión, $f^{rf}$ para Random Forest y $f^{gb}$ para Gradient Boosting.
+Sea $P_{XY}$ la distribución conjunta inducida por el proceso generador de datos, donde $X$ es una variable aleatoria $p$-dimensional e $Y$ es una variable aleatoria unidimensional. El conjunto de datos se denota como $D_n = \{(x(1), y(1)), \dots, (x(n), y(n))\}$, donde $x(i) \in \mathbb{R}^p$ e $y(i) \in \mathbb{R}$ para $i \in \{1, \dots, n\}$. Para las Secciones 2, 3 y 4 se utilizan datos simulados con distribución $\mathcal{U}(-1, 1)$, con $p = 10$ y $n = 1000$. El vector $y$ fue creado de forma tal que no sea lineal y ocurran interacciones entre las variables; además, el término de error $\epsilon$ se asumió $\mathcal{N}(0, 1)$. Mientras que en la Sección 5 se emplean tres conjuntos de datos reales.
+
+El mapeo verdadero entre características y variable objetivo se denota como $f(X) = E[Y|X = x]$. Para cualquier modelo, denotamos $f: X \rightarrow Y$ como el modelo teórico y $\hat{f}: X \rightarrow Y$ como el modelo ajustado sobre $D_n$, el cual se obtiene minimizando una función de pérdida $L: Y\times \mathbb{R}^p \rightarrow \mathbb{R}_+^0$. A lo largo del trabajo se estudiarán distintos tipos de modelos, denotados como $f^{tree}$ para árboles de regresión, $f^{rf}$ para \textit{Random Forest} y $f^{gb}$ para \textit{Gradient Boosting}.
+
+La adopción de esta notación unificada facilitará la comprensión precisa de las formulaciones matemáticas presentadas en los capítulos subsiguientes.

@@ -1,6 +1,6 @@
 Tal como se mencionó anteriormente, uno de los \textit{trade-off} de los ensambles de árboles es que al agrupar múltiples árboles el modelo en conjunto deja de ser interpretable. Esto puede no suponer un problema si el objetivo es predecir, pero si el objetivo es interpretar el modelo el hecho de trabajar con 'cajas negras' puede ser un problema.
 
-Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. Pese a que existes distintas técnicas para interpretar modelos, algunas son específicas para ciertos tipos de modelos mientras que otras son específicas, en este trabajo se estudiará como acceder a la importancia de cada covariable y al efecto que tiene cada una de ellas sobre la variable dependiente.
+Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. Pese a que existen distintas técnicas para interpretar modelos, algunas son específicas para ciertos tipos de modelos mientras que otras son agnósticas. En este trabajo se estudiará como acceder a la importancia de cada covariable y al efecto que tiene cada una de ellas sobre la variable dependiente.
 
 \section{Importancia de las variables}
 
@@ -10,14 +10,14 @@ En este trabajo nos centramos en dos: \textit{split gain feature importance} y \
 
 \subsection{\textit{Split Gain Feature Importance}}
 
-Esta técnica fue propuesta por \cite{@friedman_2001} y asignar importancias en base a la cantidad de \textit{splits} que cada variable tiene en el árbol. Esta metodología solamente se puede aplicar para árboles de decisión y más formalmente se ve para un solo árbol:
+Esta técnica fue propuesta por \cite{friedman_2001} y asigna importancias en base a la cantidad de \textit{splits} que cada variable tiene en el árbol. Esta metodología solamente se puede aplicar para árboles de decisión y más formalmente se ve para un solo árbol:
  
 \begin{equation}
     \label{eq:split-importance}
-\hat{I}_j^{2}(T)=\sum_{t=1}^{j-1}\hat{i}_t^{2}1(v_t=1)    
+\hat{I}_j^{2}(T)=\sum_{t=1}^{J-1}\hat{i}_t^{2}1(v_t=j)    
 \end{equation}
 
-done $I$ es la influencia para el nodo $j$ del árbol $T$, siento $v$ la \textit{splitting variable} que se suma por todos los nodos no terminales.
+donde $I$ es la influencia para el nodo $j$ del árbol $T$, siendo $v$ la \textit{splitting variable} que se suma por todos los nodos no terminales.
 
 La ecuación \autoref{eq:split-importance} es calculada para un solo árbol. Por lo que cuando se trabaja con ensambles de árboles se debe generalizar a
 
@@ -25,58 +25,50 @@ La ecuación \autoref{eq:split-importance} es calculada para un solo árbol. Por
 \hat{\mathbf{I}}_j^{2}=\frac{1}{B}\sum_{m=1}^{B}\hat{I}^{2}_j(T_b)    
 \end{equation}
 
-Intuitivamente, se puede entender como el promedio de los \textit{splits} de cada variable. Sin embargo, esta medida esta basada en heurísticas y no contiene fundamentos estadísticos sólidos. Tal es así que fue criticada por \cite{zhou2020} y \cite{strobl_2008} por dar demasiada influencia a variables correlacionadas y favorecer variables categóricas con muchas categorias.
+Intuitivamente, se puede entender como el promedio de los \textit{splits} de cada variable. Sin embargo, esta medida esta basada en heurísticas y no contiene fundamentos estadísticos sólidos. Tal es así que fue criticada por \cite{strobl_2008} por dar demasiada influencia a variables correlacionadas y favorecer variables categóricas con muchas categorias.
 
-El problema de las variables correlacionadas radica en que el modelo no puede distinguir entre aquellas variables que realmente aportan a la generación de los datos con las que simplmenente correlacionan con variables influyentes, por lo que termina asignando mayor influencia a variables que no deberían tenerla.
+El problema de las variables correlacionadas radica en que el modelo no puede distinguir entre aquellas variables que realmente aportan a la generación de los datos con las que simplemente correlacionan con variables influyentes, por lo que termina asignando mayor influencia a variables que no deberían tenerla.
 
-En el caso de las variables categóricas, este método prioriza aquellas variables que son propensas a tener muchos \textit{splits}, sin que esto siginifique que las variables son importantes o estan reduciendo el error.
+En el caso de las variables categóricas, este método prioriza aquellas variables que son propensas a tener muchos \textit{splits}, sin que esto signifique que las variables son importantes o estan reduciendo el error.
 
 \subsection{Permutation Feature Importance} 
 
-Otra alternativa para calcular las importancias de las variables es uilizar \textit{Permutation feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} exclusivamente para \textit{Random Forest} que luego fue generalizada para cualquier modelo \cite{fisher2019}. Estas técnicas se basan, intuitivamente, en entender cómo cambia la función de pérdida cuando se permutan las variables. Las variables más importantes serán aquellas que más cambien el error del modelo al ser permutadas.
-Como se ve a continuación, si bien \cite{fisher2019} propone métodos para calcular la importancia en modelos de clasificación, se proesentará la adaptación a un modelo de regresión. Por lo que habiendo entrenado un modelo de \textit{random forest} $\hat{f}$ para cada covariable $j \in {1,2,...,J}$ se:
-\begin{enumerate}
-    \item Construye un nuevo conjunto de datos $X_j$ permutando las observaciones de la covariable $j$ y dejando el resto de las observaciones fijas.
-    \item Entrena un nuevo modelo $\hat{f}_j$ utilizando el nuevo conjunto de datos $X_j$ y calcula el out-of-bag error.
+Otra alternativa para calcular las importancias de las variables es utilizar \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} exclusivamente para \textit{Random Forest} que luego fue generalizada para cualquier modelo \cite{fischer_2019}. Estas técnicas se basan, intuitivamente, en entender cómo cambia la función de pérdida cuando se permutan las variables. Las variables más importantes serán aquellas que más cambien el error del modelo al ser permutadas.
+Como se ve a continuación, si bien \cite{fischer_2019} propone métodos para calcular la importancia en modelos de clasificación, se presentará la adaptación a un modelo de regresión. Por lo que habiendo entrenado un modelo de \textit{random forest} $\hat{f}$ para cada covariable $j \in \{1,2,...,J\}$, se construye un nuevo conjunto de datos $X_j$ permutando las observaciones de la covariable $j$ y dejando el resto de las observaciones fijas. Posteriormente, se entrena un nuevo modelo $\hat{f}_j$ utilizando el nuevo conjunto de datos $X_j$ y se calcula el error \textit{out-of-bag}:
+
 \begin{equation}
 E_{OOB}(X_j) = \frac{1}{n} \sum_{i=1}^{n} \left( y_i -  \hat{f}^{(b)}(X_{i,j}) \right)^2    
 \end{equation}
-\item Luego se compara el out-of-bag error con el error del modelo original y se calcula la diferencia mediante:
+
+Luego se compara el error \textit{out-of-bag} con el error del modelo original y se calcula la diferencia mediante:
 \begin{equation}
     PFI(j) = E_{OOB}(X_j) - E_{OOB}(X) ~~ \text{ó} ~~ PFI(j) = \frac{E_{OOB}(X_j)}{E_{OOB}(X)}
 \end{equation}
-\end{enumerate}
 
-Sin embargo, como se mencionó anteriormente este método para calcular importancias no es generalizable dado que utiliza los errores out-of-bag, por lo que un modelo que no utilice esta metodología no podría usarla. Sin embargo, es fácilmente extendible a dichos casos. A continuación se presenta la generalización propuesta en \cite{fisher2019}.
+Sin embargo, como se mencionó anteriormente este método para calcular importancias no es generalizable dado que utiliza los errores \textit{out-of-bag}, por lo que un modelo que no utilice esta metodología no podría usarla. Sin embargo, es fácilmente extendible a dichos casos. A continuación se presenta la generalización propuesta en \cite{fischer_2019}.
 
-Los autores se basan en la propuesta de \cite{breiman2001a}, pero deciden llamar a la medida de importancia \textit{Model Reliance} (MR). Por lo que partiendo de un modelo entrenado $\hat{f}$, una variable de respuesta $y$, una función de pérdida $L$ y una matriz de diseño $X$ con covariables $j \in {1,2,...,J}$, para cada covariable j se:
+Los autores se basan en la propuesta de \cite{breiman2001a}, pero deciden llamar a la medida de importancia \textit{Model Reliance} (MR). Por lo que partiendo de un modelo entrenado $\hat{f}$, una variable de respuesta $y$, una función de pérdida $L$ y una matriz de diseño $X$ con covariables $j \in \{1,2,...,J\}$, para cada covariable $j$ se permuta dicha covariable y se calcula la pérdida esperada:
 
-\begin{itemize}
-    \item permuta la covariable j
-    \item Calculamos la pérdida
-    \begin{equation}
-    L_{perm}(f)= \mathcal{E}[L(f,(Y,X_1^{perm},X_2))]    
-    \end{equation}
-    
-    donde se permutan los valores de $X_1$, dejando constantes las demás variables. 
-    \item se compara la perdida con el error original
-    \begin{equation}
-    MR^{j}(f)=\frac{L^{j}_{perm}(f)}{L(f)}    
-    \end{equation}
+\begin{equation}
+L_{perm}(f)= \mathcal{E}[L(f,(Y,X_1^{perm},X_2))]    
+\end{equation}
 
-\end{itemize}
+donde se permutan los valores de $X_1$, dejando constantes las demás variables. Luego, se compara la pérdida con el error original:
+
+\begin{equation}
+MR^{j}(f)=\frac{L^{j}_{perm}(f)}{L(f)}    
+\end{equation}
 
 De esta forma se obtiene cuanto afecta cada covariable a la variable de respuesta.
 
-Para calcular $L_{perm}$ los autores proponen dos alternativas,
-\begin{enumerate}
-    \item Realizar una permutación por todas las observaciones
-    \begin{equation}
-        \hat{e}_{perm}(F)\frac{1}{n(n-1)}\sum_{i=1}^n\sum_{j\neq i}L\{f,y_j,X_{1[i,.]},X_{2[i,.]} \}
-    \end{equation}
-    Sin embargo esto puede ser computacionalmente muy peasado, por lo que proponen como alternativa
-    \item Dividir la muestra a la mitad y reemplazar los valores de $X_1$ de la primera mitad con los de la segunda y vice versa.
-    
+Para calcular $L_{perm}$ los autores proponen dos alternativas. La primera consiste en realizar una permutación por todas las observaciones:
+
+\begin{equation}
+    \hat{e}_{perm}(F)\frac{1}{n(n-1)}\sum_{i=1}^n\sum_{j\neq i}L\{f,y_j,X_{1[i,.]},X_{2[i,.]} \}
+\end{equation}
+
+Sin embargo esto puede ser computacionalmente muy pesado, por lo que proponen como alternativa dividir la muestra a la mitad y reemplazar los valores de $X_1$ de la primera mitad con los de la segunda y viceversa:
+
 \begin{equation}
     \begin{aligned}
     \hat{e}_{\text{divide}}(f) &= \frac{1}{2 \lfloor n/2 \rfloor} \sum_{i=1}^{\lfloor n/2 \rfloor} \left[
@@ -85,7 +77,6 @@ Para calcular $L_{perm}$ los autores proponen dos alternativas,
     \right]. \\
     \end{aligned}    
 \end{equation}
-\end{enumerate}
 
 
 \subsection{Model Class Reliance} 
@@ -137,12 +128,12 @@ Específicamente, para este ejemplo se entrenaron modelos con cantidad de árbol
 
 Además, y posiblemente más preocupante, cuando vemos la Figura \autoref{fig:line-plot-importances} vemos como las importancias de las variables (calculadas mediante \textit{Permutation Feature Importance}) varían entre modelos con un poder predictivo similar. Este mismo fenómeno puede verse también en la Figura \autoref{fig:heatmap-importances} donde para los distintos modelos las variables tienen rankings de importancia muy diferentes. El heatmap muestra claramente cómo una misma variable puede ser considerada la más importante (ranking 1) en un modelo, mientras que en otro puede tener una importancia mucho menor (ranking 5 o 6). Esta inconsistencia en la importancia de las variables entre modelos con rendimiento similar sugiere inestabilidad en la interpretación de los resultados a los que se puede llegar.
 
-El fenómeno observado, donde múltiples modelos con similar capacidad predictiva asignan importancias sustancialmente diferentes a las variables, se conoce como el \textit{Rashomon Effect} en estadística \cite{breiman_2001}. Este término, inspirado en la película de Kurosawa donde un mismo evento es narrado desde perspectivas contradictorias es formalizado en \cite{fisher2019} como el "conjunto de Rashomon", definido como la colección de modelos con rendimiento predictivo similar pero con diferentes estructuras internas. Esta multiplicidad de explicaciones válidas representa un desafío fundamental para la interpretabilidad en \textit{machine learning}, ya que sugiere que la importancia de una variable no es una propiedad intrínseca de los datos, sino que depende del modelo específico elegido.
+El fenómeno observado, donde múltiples modelos con similar capacidad predictiva asignan importancias sustancialmente diferentes a las variables, se conoce como el \textit{Rashomon Effect} en estadística \cite{breiman_2001}. Este término, inspirado en la película de Kurosawa donde un mismo evento es narrado desde perspectivas contradictorias es formalizado en \cite{fischer_2019} como el "conjunto de Rashomon", definido como la colección de modelos con rendimiento predictivo similar pero con diferentes estructuras internas. Esta multiplicidad de explicaciones válidas representa un desafío fundamental para la interpretabilidad en \textit{machine learning}, ya que sugiere que la importancia de una variable no es una propiedad intrínseca de los datos, sino que depende del modelo específico elegido.
 
 Es por ello que los autores trabajaron sobre la \textit{Model Class Reliance} (MCR), que se basa en para una clase de modelos $\mathcal{F}$, MCR es el rango de todos los posibles valores de MR sobre modelos que tengan un poder predictivo similar al óptimo. Para lo cual, primero se define el "conjunto de Rashomon" como
 
 \begin{equation}
-R(\epsilon)\{f\in\mathcal{f}|e_{orig}(f)\neq e_{orig}(f_{ref}) + epsilon   \}    
+R(\epsilon) = \{f \in \mathcal{F} \mid e_{orig}(f) \le e_{orig}(f_{ref}) + \epsilon \}    
 \end{equation}
 
 Este set contiene todos los modes cuya pérdida sea como mucho $\epsilon$ peor que el modelo que minimiza el error $f_{ref}$
@@ -179,12 +170,7 @@ Sin embargo, en la práctica es raro conocer $p(x_l)$ por lo que se utiliza el s
 \bar{f}(z)\approx\frac{1}{n}\sum_{i=1}^{n}\hat{f}(z,x_l^{i})
 \end{equation}
 
-Cuyo algoritmo sería:
-\begin{enumerate}
-    \item Para cada observación $i$ en la muestra, se toman los valores originales de las variables no seleccionadas $x_l^{i}$
-    \item Se utilizan los valores modificados de las variables z en cada $x_l^{i}$ dentro del modelo $\hat{F}$ para obtener las predicciones $\hat F(z,x_l^{i})$
-    \item Se promedian las predicciones para $i=1,2,...,n$
-\end{enumerate}
+Cuyo algoritmo sería, para cada observación $i$ en la muestra, tomar los valores originales de las variables no seleccionadas $x_l^{i}$. Posteriormente, se utilizan los valores modificados de las variables z en cada $x_l^{i}$ dentro del modelo $\hat{F}$ para obtener las predicciones $\hat F(z,x_l^{i})$. Finalmente, se promedian las predicciones para $i=1,2,...,n$.
 
 Cabe aclarar que al modificar solamente una variable y dejar el resto como estaban, se esta asumiendo que las variables $z$ son independientes a todo el resto. Algo que puede o no ser cierto dependiendo de la naturaleza de los datos. Además, al cambiar los valores de las variables a evaluar se podrían dar combinaciones poco realistas en la practica.
 
@@ -202,7 +188,7 @@ Sin embargo, como se mencionó anteriormente, los PDPs sufren problemas cuando l
 
 \subsection{\textit{Individual Conditional Expectation }(ICE)}
 
-Los ICE fueron introducidos por \cite{Goldstein02015} como una técnica para estimar el efecto de una covariable sobre la variable de respuesta, más formalmente lo que se busca estimar es:
+Los ICE fueron introducidos por \cite{Goldstein2015} como una técnica para estimar el efecto de una covariable sobre la variable de respuesta, más formalmente lo que se busca estimar es:
 
 \begin{equation}
 f_i(x_z)=E[Y|X_z=x_z,X_{-z}=x_{-z}^{i}]    
@@ -252,7 +238,7 @@ lo cual significa que la relación entre $x_s$ y $\hat{f}$ no depende de $x_c$. 
 
 \subsubsection{Causalidad}
 
-Pese a que \cite{pearl2018} menciona por qué los modelos de aprendizaje automático no pueden ser utilizados para hacer inferencia causal, dado que todos estos modelos se basan en el nivel de asociación entre variables, sin llegar a la intervención o contrafactuales. Sin embargo, \cite{Zhao2021} plantea que los PDPs y ICEs bajo ciertas condiciones pueden tener una interpretación en causal.
+Pese a que \cite{pearl_2018} menciona por qué los modelos de aprendizaje automático no pueden ser utilizados para hacer inferencia causal, dado que todos estos modelos se basan en el nivel de asociación entre variables, sin llegar a la intervención o contrafactuales. Sin embargo, \cite{Zhao_2021} plantea que los PDPs y ICEs bajo ciertas condiciones pueden tener una interpretación en causal.
 
 Los autores se basan en que \autoref{eq:pdp} es igual al \textit{backdoor adjustment} definido por \cite{Pearl1993} como
 \begin{equation}
@@ -265,7 +251,6 @@ donde $P(Y|do(X_s=x_s))$ se refiere a la distribución de $Y$ luego de hacer un 
 \begin{equation}
 E[Y|do(X_s=x_s)]=\int E[Y|X_s=x_s, X_c=x_c]dP(x_c)
 \end{equation}
-
 
 Ahora si partimos de $\hat{f}(x)$ la función aprendida por el modelo, que aproxima la expectativa condicional, es decir,  
 \begin{equation}
@@ -294,7 +279,7 @@ por lo que puede verse que \autoref{eq:pdp} y \autoref{eq:back-door-expectation}
 
 Es interesante considerar que, aunque los modelos de aprendizaje automático suelen superar en rendimiento predictivo a los métodos estadísticos convencionales, estos últimos permiten establecer un vínculo directo entre los parámetros del modelo y las propiedades del proceso generador de datos (DGP). Esta capacidad resulta fundamental para comprender en profundidad la naturaleza subyacente de la población.
 
-En \cite{Molnar_2023} se propone un marco estadístico que relaciona formalmente las técnicas de interpretación basadas en \textit{Partial Dependence Plots} (PDP) y \textit{Permutation Feature Importance} (PFI) con el DGP. En este contexto, se introducen los conceptos de DGP-PD y DGP-PFI, definidos respectivamente como
+En \cite{freiesleben_2024} se propone un marco estadístico que relaciona formalmente las técnicas de interpretación basadas en \textit{Partial Dependence Plots} (PDP) y \textit{Permutation Feature Importance} (PFI) con el DGP. En este contexto, se introducen los conceptos de DGP-PD y DGP-PFI, definidos respectivamente como
 
 \begin{equation}
 DGP\text{-}PD(x)=E_{X_C}\left[f(x, X_C)\right]
