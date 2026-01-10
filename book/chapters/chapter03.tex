@@ -1,3 +1,5 @@
+%#TODO: agregar fuentes
+
 Como se mencionó anteriormente, dos de los problemas principales de los árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que en este capítulo se estudian dos métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}. 
 
 Los ensambles mejoran la capacidad predictiva y reducen la variabilidad. La idea general es agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
@@ -30,7 +32,6 @@ ahora nos concentramos en cómo la varianza afecta al error
 \begin{equation}
     Var(\hat{f}_{bag}(x))=Var(\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x))=\frac{1}{B^2}Var(\sum_{b=1}^{B}\hat{f}^b(x))
 \end{equation}
-	
 
 asumiendo que los $\hat{f}^b(x)$ están idénticamente distribuidos, se puede reescribir:
 

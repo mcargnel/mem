@@ -1,4 +1,4 @@
-En este capítulo se hará una revisión sobre árboles de regresión y clasificación (CART).
+En este capítulo se hará una revisión sobre árboles de regresión y clasificación (CART), basando la explicación en \cite{CART}.
 
 Estos modelos entran dentro de la categoría de análisis supervisado no paramétrico, por lo que tienen una gran flexibilidad que les permite modelar naturalmente las interacciones entre variables. Otra de las ventajas de estos algoritmos es su interpretabilidad, dado que es muy sencillo entender el efecto de cada variable explicativa en la variable dependiente siguiendo la estructura del árbol.
 
@@ -61,9 +61,13 @@ con $n$ el número de observaciones, $R$ el número total de regiones después d
 
 Este algoritmo ya no crece de manera exponencial como el anterior, por lo que es más sencillo de calcular que el anterior.
 
-\subsection{Definir cuando un nodo es terminal} %# TODO: completar la sub-sección
+\subsection{Definir cuándo un nodo es terminal}
 
-Definir cuando un nodo es terminal es equivalente a pensar cuando un nodo
+Definir cuándo un nodo es terminal es equivalente a establecer una regla de parada en el algoritmo de partición recursiva. En teoría, se podría continuar dividiendo los nodos hasta que cada uno contenga una única observación, lo cual minimizaría el error en la muestra de entrenamiento a cero. No obstante, esto conduciría a un modelo sobreajustado con poca capacidad de predicción en nuevos datos.
+
+Para evitar esto, \cite{CART} proponen definir un nodo como terminal cuando se cumple alguna condición restrictiva. Las condiciones más habituales incluyen que el número de observaciones en el nodo sea menor a un mínimo preestablecido (por ejemplo, $n_{min} = 5$) o que la disminución del error cuadrático medio que se obtendría con la mejor partición posible no supere un cierto umbral. También se detiene el proceso si el nodo es puro, es decir, si todas las observaciones tienen el mismo valor de respuesta.
+
+Es importante notar que detener el crecimiento del árbol demasiado pronto puede impedir que se descubran estructuras importantes en los datos que solo aparecerían tras particiones adicionales. Por esta razón, la estrategia recomendada y más utilizada consiste en establecer criterios de parada laxos para construir un árbol inicialmente muy grande ($T_0$), y posteriormente aplicar técnicas de poda (\textit{pruning}) para encontrar el subárbol óptimo, como se explicará más adelante.
 
 \subsection{Asignar valores a nodos terminales}
 
@@ -105,7 +109,7 @@ Por lo que los valores que tendrán los nodos terminales (predicciones) serán s
 
 Construir un árbol con demasiadas particiones puede llevar a un sobre ajuste. Básicamente porque si pensamos en el árbol más grande que se puede construir con una muestra, el mismo tendría un nodo terminal por cada observación, lo cual llevaría a un error muy bajo en la muestra de entrenamiento, pero una capacidad de generalización muy mala.
 
-Para evitar esto, buscaremos poner un límite a cuanto puede crecer el árbol, para ello existen múltiples alternativas como fijar cotas a la profundidad del árbol, al número de observaciones que pueden quedar en la misma hoja o bien hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Este último procedimiento será descrito en el trabajo.
+Para evitar esto, buscaremos poner un límite a cuanto puede crecer el árbol, para ello existen múltiples alternativas como fijar cotas a la profundidad del árbol, al número de observaciones que pueden quedar en la misma hoja o bien hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Esta última es una técnica que permite estimar el error de generalización dividiendo el conjunto de datos en $k$ grupos o \textit{folds}. El procedimiento consiste en entrenar el modelo utilizando $k-1$ grupos y evaluarlo en el grupo restante, repitiendo este proceso $k$ veces para que cada grupo funcione como conjunto de prueba una vez. El error de validación final es el promedio de los errores obtenidos en cada iteración, lo que permite seleccionar el parámetro de complejidad que minimiza dicho error.
 
 Antes de describir el procedimiento es importante definir $T_0$ como un árbol maximal y considerar que $T'$ sea un subárbol podado de $T$. Para que un árbol sea considerado subárbol de otro tiene que tener $T' = T_0 - T_t$, donde $T_t$ es una rama (subárbol) que se elimina de $T_0$ para obtener $T'$.
 
@@ -128,9 +132,47 @@ Se puede ver en la \autoref{fig:arbol-alpha} como a medida que aumentan los valo
 
 \section{Outliers y Limitaciones}
 \subsection{Outliers}
-Es sabido que las regresiones lineales son muy sensibles a \textit{outliers}. Sin embargo, como se ve en Breiman los valores atípicos terminan siendo aislados en pequeños nodos. Esta capacidad de aislar los \textit{outliers} permite hacer el modelo menos sensible a datos atípicos.
+Una característica relevante de los árboles de decisión es su manejo de los valores atípicos u \textit{outliers}. Debido a su estructura de particionamiento recursivo del espacio de predictores, estos modelos tienden a aislar las observaciones extremas en nodos específicos. Esto contrasta con métodos que buscan ajustar una estructura global única a todos los datos, donde un valor extremo podría distorsionar la estimación general. En un árbol, una vez que el \textit{outlier} ha sido segregado en una región terminal, su influencia queda confinada a esa predicción local, sin afectar necesariamente la estructura del resto del árbol.
 
-\subsection{Limitaciones} %#TODO: agregar mas info.
-Dado que este trabajo se centra en la interpretación de modelos, la principal limitación que se destaca es la falta de estabilidad. Es decir que la varianza de los árboles genera que las particiones puedan ser muy distintas ante cambios en los datos. Esto lógicamente atenta contra la interpretación.
+Para ilustrar este comportamiento, se realizó una simulación generando $N=100$ datos con la siguiente estructura:
 
-Otras limitaciones son la falta de suavidad y las dificultades que tienen para captar una estructura aditiva en los datos.
+\begin{equation}
+    Y = \beta_0 + \sum_{i=1}^{4} \beta_i X_i + \gamma X_5 + u
+\end{equation}
+
+donde $\beta_i$ son coeficientes aleatorios, y las variables explicativas $X_1, \dots, X_4$ se distribuyen uniformemente, $X_i \sim \mathcal{U}(-5, 5)$. La variable $X_5$ es la encargada de introducir los valores atípicos, distribuida como una mezcla de normales. Siguiendo la notación de \cite{maronna2019robust}, su función de distribución $F$ se define como:
+
+\begin{equation}
+    F = (1-\epsilon) \mathcal{N}(\mu,1) + \epsilon \mathcal{N}(\mu,\tau^2)
+\end{equation}
+
+En esta expresión, $\epsilon$ representa la probabilidad de contaminación. Para esta simulación se establecieron los parámetros $\mu = 0$, $\tau = 100$ y $\epsilon = 0.05$. Esto implica que el 95\% de las observaciones de $X_5$ provienen de una distribución normal estándar, mientras que el 5\% restante proviene de una distribución con una varianza significativamente mayor, constituyendo los \textit{outliers}. El término de error $u$ sigue una distribución $\mathcal{N}(0,1)$.
+
+La \autoref{fig:histogram_outliers} muestra el histograma de la variable respuesta $Y$. Se puede apreciar que, si bien la mayoría de los datos se concentran en torno al cero, existen observaciones con valores extremos en ambas colas de la distribución, producto de la contaminación introducida en $X_5$.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_2/histogram_outliers.pdf}
+    \caption{Histograma de $Y$ evidenciando la presencia de valores atípicos.}
+    \label{fig:histogram_outliers}
+\end{figure}
+
+Al ajustar un árbol de regresión a estos datos (limitando la profundidad para facilitar la visualización), el algoritmo identifica rápidamente la variable $X_5$ como un punto de corte crítico. Como se observa en la \autoref{fig:tree_outliers}, el árbol logra separar eficazmente las observaciones regulares de los valores anómalos. Las divisiones basadas en $X_5$ actúan como un filtro, agrupando los \textit{outliers} en nodos terminales con pocos datos pero con medias muy altas, permitiendo que los demás nodos capturen correctamente la relación subyacente para el resto de la muestra.
+
+\begin{figure}[ht!]
+    \centering
+    \includegraphics[width=1\textwidth]{images/capitulo_2/tree_outliers.pdf}
+    \caption{Estructura del árbol de regresión. Se observa cómo las particiones aíslan los valores extremos.}
+    \label{fig:tree_outliers}
+\end{figure}
+
+
+\subsection{Limitaciones}
+
+Dado que este trabajo se centra en la interpretación de modelos, la principal limitación que se destaca es la falta de estabilidad (o alta varianza). Esto significa que pequeños cambios en los datos de entrenamiento pueden dar lugar a particiones muy diferentes y, por ende, a una estructura de árbol completamente distinta. Esta inestabilidad surge de la naturaleza jerárquica del algoritmo: un error o cambio en una división superior se propaga a todas las ramas inferiores \cite{ISLP}. Esto representa un desafío para la interpretación, ya que la importancia de las variables puede variar drásticamente con ligeras modificaciones en la muestra.
+
+Otra limitación relevante es la dificultad que presentan los árboles para capturar estructuras aditivas simples. Mientras que una regresión lineal puede modelar eficientemente una relación del tipo $Y = \beta_0 + \sum \beta_j X_j$, un árbol de decisión necesita realizar múltiples particiones para aproximar esta estructura lineal mediante una función escalonada. Esto suele resultar en una menor capacidad predictiva en comparación con modelos paramétricos cuando la verdadera relación es lineal.
+
+Además, las predicciones de los árboles de decisión no son continuas ni suaves, sino constantes por regiones. Esto puede ser una desventaja en problemas donde se espera que la variable respuesta cambie gradualmente con las variables explicativas.
+
+Por último, en la práctica los árboles no suelen tener una alta capacidad predictiva, lo que limita su uso en problemas complejos y requiere el uso de técnicas como \textit{bagging} o \textit{boosting} para mejorar su capacidad predictiva y reducir la varianza.
