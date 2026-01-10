@@ -1,1 +1,109 @@
-Appendix goes here...
+\begin{table}[ht!]
+\centering
+\caption{Metricas de los 5 modelos con menor error en la muestra de validación cruzada - Airfoil Self Noise}
+\label{tbl:metrics_airfoil_self_noise}
+\begin{tabular}{llllcc}
+\hline
+Rank & \textit{Learning Rate} & \textit{N Estimators} & RMSE & MAE & $R^2$ \\
+\hline
+1 & 0.2& 1900 & 1.4761 & 1.0337 & 0.9565 \\
+2 & 0.2& 1800 & 1.4838 & 1.0420 & 0.9561 \\
+3 & 0.2& 1700 & 1.4943 & 1.0508 & 0.9554 \\
+4 & 0.2& 1600 & 1.5117 & 1.0663 & 0.9544 \\
+5 & 0.2& 1500 & 1.5173 & 1.0773 & 0.9540 \\
+\hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht!]
+\centering
+\caption{Comparación de importancia de características para los 5 modelos con menor error en la muestra de validación cruzada - Airfoil Self Noise}
+\label{tbl:imp_airfoil_self_noise}
+\begin{tabular}{llllcc}
+\hline
+Feature & Top 1 & Top 2 & Top 3 & Top 4 & Top 5 \\
+\hline
+suction-side-displacement-thickness & 0.4134 & 0.4133 & 0.4133 & 0.4131 & 0.4129 \\
+frequency & 0.4084 & 0.4084 & 0.4085 & 0.4086 & 0.4087 \\
+chord-length & 0.1385 & 0.1385 & 0.1386 & 0.1386 & 0.1386 \\
+free-stream-velocity & 0.0397 & 0.0397 & 0.0397 & 0.0397 & 0.0397 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht!]
+\centering
+\caption{Metricas de los 5 modelos con menor error en la muestra de validación cruzada - Concrete Strength}
+\label{tbl:metrics_concrete_strength}
+\begin{tabular}{llllcc}
+\hline
+Rank & \textit{Learning Rate} & \textit{N Estimators} & RMSE & MAE & $R^2$ \\
+\hline
+1 & 0.1& 800 & 4.3500 & 2.8629 & 0.9266 \\
+2 & 0.1& 700 & 4.3934 & 2.9138 & 0.9251 \\
+3 & 0.1& 900 & 4.3479 & 2.8536 & 0.9266 \\
+4 & 0.1& 1000 & 4.3259 & 2.8221 & 0.9274 \\
+5 & 0.1& 600 & 4.4356 & 2.9745 & 0.9236 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht!]
+\centering
+\caption{Comparación de importancia de características para los 5 modelos con menor error en la muestra de validación cruzada - Concrete Strength}
+\label{tbl:imp_concrete_strength}
+\begin{tabular}{llllcc}
+\hline
+Feature & Top 1 & Top 2 & Top 3 & Top 4 & Top 5 \\
+\hline
+Age & 0.3578 & 0.3578 & 0.3578 & 0.3579 & 0.3579 \\
+Cement & 0.3021 & 0.3023 & 0.3020 & 0.3018 & 0.3024 \\
+Water & 0.1139 & 0.1138 & 0.1138 & 0.1138 & 0.1139 \\
+Blast Furnace Slag & 0.0811 & 0.0812 & 0.0811 & 0.0811 & 0.0812 \\
+Superplasticizer & 0.0747 & 0.0747 & 0.0747 & 0.0747 & 0.0746 \\
+Fine Aggregate & 0.0369 & 0.0368 & 0.0369 & 0.0369 & 0.0367 \\
+Coarse Aggregate & 0.0189 & 0.0188 & 0.0190 & 0.0191 & 0.0187 \\
+Fly Ash & 0.0146 & 0.0146 & 0.0146 & 0.0147 & 0.0146 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht!]
+\centering
+\caption{Metricas de los 5 modelos con menor error en la muestra de validación cruzada - Wine Quality}
+\label{tbl:metrics_wine_quality}
+\begin{tabular}{llllcc}
+\hline
+Rank & \textit{Learning Rate} & \textit{N Estimators} & RMSE & MAE & $R^2$ \\
+\hline
+1 & 0.2& 1600 & 0.6103 & 0.4379 & 0.4957 \\
+2 & 0.2& 1300 & 0.6102 & 0.4379 & 0.4959 \\
+3 & 0.2& 1400 & 0.6100 & 0.4378 & 0.4961 \\
+4 & 0.2& 1900 & 0.6102 & 0.4378 & 0.4958 \\
+5 & 0.2& 1800 & 0.6103 & 0.4379 & 0.4957 \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[ht!]
+\centering
+\caption{Comparación de importancia de características para los 5 modelos con menor error en la muestra de validación cruzada - Wine Quality}
+\label{tbl:imp_wine_quality}
+\begin{tabular}{llllcc}
+\hline
+Feature & Top 1 & Top 2 & Top 3 & Top 4 & Top 5 \\
+\hline
+alcohol & 0.2602 & 0.2602 & 0.2603 & 0.2601 & 0.2601 \\
+volatile\_acidity & 0.1397 & 0.1395 & 0.1395 & 0.1396 & 0.1396 \\
+total\_sulfur\_dioxide & 0.0885 & 0.0885 & 0.0885 & 0.0887 & 0.0886 \\
+sulphates & 0.0832 & 0.0833 & 0.0833 & 0.0831 & 0.0831 \\
+pH & 0.0807 & 0.0806 & 0.0806 & 0.0808 & 0.0807 \\
+residual\_sugar & 0.0785 & 0.0787 & 0.0785 & 0.0786 & 0.0786 \\
+chlorides & 0.0712 & 0.0710 & 0.0712 & 0.0712 & 0.0712 \\
+citric\_acid & 0.0681 & 0.0683 & 0.0682 & 0.0680 & 0.0681 \\
+density & 0.0656 & 0.0656 & 0.0656 & 0.0655 & 0.0655 \\
+fixed\_acidity & 0.0644 & 0.0643 & 0.0643 & 0.0644 & 0.0643 \\
+\hline
+\end{tabular}
+\end{table}

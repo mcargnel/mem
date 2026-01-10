@@ -257,22 +257,27 @@ def evaluate_top_5(
     df = pd.DataFrame(metrics_list)
     return df
 
-def get_feature_importances(
-    model: BaseEstimator, 
+def get_top_5_importances(
+    top_5_models: List[Tuple[Dict[str, Any], BaseEstimator]],
     feature_names: List[str]
 ) -> pd.DataFrame:
-    """Extract feature importances from model."""
-    if hasattr(model, 'feature_importances_'):
-        importances = model.feature_importances_
-    else:
-        # Fallback or empty if not supported (linear regression typically uses coefs but strict 'importance' varies)
-        return pd.DataFrame()
-        
-    df = pd.DataFrame({
-        'Feature': feature_names,
-        'Importance': importances
-    }).sort_values('Importance', ascending=False)
-    return df
+    """Extract and aggregate feature importances from top 5 models."""
+    df_combined = pd.DataFrame({'Feature': feature_names})
+    
+    for i, (_, model) in enumerate(top_5_models, 1):
+        if hasattr(model, 'feature_importances_'):
+            imps = model.feature_importances_
+            df_combined[f'Top {i}'] = imps
+    
+    # Calculate Mean Importance for sorting (optional but good for display)
+    df_combined['Mean'] = df_combined.filter(like='Top').mean(axis=1)
+    df_combined = df_combined.sort_values('Mean', ascending=False)
+    
+    # Drop Mean column if you only want the raw model columns, but keeping it helps ordering
+    # For the table, we might just show Top 1-5.
+    df_combined = df_combined.drop(columns=['Mean'])
+    
+    return df_combined
 
 def permutation_importance_plot(
     best_model, X_test: pd.DataFrame, y_test: np.ndarray, save_path: Optional[Path] = None
@@ -365,7 +370,7 @@ def export_results_latex(
     {
         'DatasetName': {
             'metrics': pd.DataFrame (top 5 metrics),
-            'importances': pd.DataFrame (feature importances of best model #1)
+            'importances': pd.DataFrame (feature importances comparative)
         }
     }
     """
@@ -386,9 +391,8 @@ def export_results_latex(
             f.write(r"\hline" + "\n")
             
             for _, row in metrics_df.iterrows():
-                # Escape special chars in params string if necessary (minimal here)
-                params_str = row['Params'].replace("_", r"\_").replace("'", "").replace("{", "").replace("}", "")
-                # Truncate params if too long?
+                # Escape special chars in params string
+                params_str = str(row['Params']).replace("_", r"\_").replace("'", "").replace("{", "").replace("}", "")
                 
                 f.write(f"{row['Rank']} & {params_str} & {row['RMSE']:.4f} & {row['MAE']:.4f} & {row['R²']:.4f} \\\\" + "\n")
             
@@ -398,24 +402,25 @@ def export_results_latex(
             f.write(r"\label{tab:metrics_" + dataset_name.lower().replace(" ", "_") + r"}" + "\n")
             f.write(r"\end{table}" + "\n\n")
             
-            # Importance Table
+            # Comparison Importance Table
             imp_df = data['importances']
             if not imp_df.empty:
-                f.write(r"\subsubsection{Feature Importance (Best Model)}" + "\n")
+                f.write(r"\subsubsection{Feature Importance Comparison}" + "\n")
                 f.write(r"\begin{table}[H]" + "\n")
                 f.write(r"\centering" + "\n")
-                f.write(r"\begin{tabular}{|l|c|}" + "\n")
+                # Define columns: Feature + 5 models => l|c|c|c|c|c|
+                f.write(r"\begin{tabular}{|l|c|c|c|c|c|}" + "\n")
                 f.write(r"\hline" + "\n")
-                f.write(r"Feature & Importance \\" + "\n")
+                f.write(r"Feature & Top 1 & Top 2 & Top 3 & Top 4 & Top 5 \\" + "\n")
                 f.write(r"\hline" + "\n")
                 
                 for _, row in imp_df.iterrows():
                     feat_name = str(row['Feature']).replace("_", r"\_")
-                    f.write(f"{feat_name} & {row['Importance']:.4f} \\\\" + "\n")
+                    f.write(f"{feat_name} & {row['Top 1']:.4f} & {row['Top 2']:.4f} & {row['Top 3']:.4f} & {row['Top 4']:.4f} & {row['Top 5']:.4f} \\\\" + "\n")
                     
                 f.write(r"\hline" + "\n")
                 f.write(r"\end{tabular}" + "\n")
-                f.write(f"\\caption{{Feature importance for best model - {dataset_name}}}" + "\n")
+                f.write(f"\\caption{{Feature importance comparison for top 5 models - {dataset_name}}}" + "\n")
                 f.write(r"\label{tab:imp_" + dataset_name.lower().replace(" ", "_") + r"}" + "\n")
                 f.write(r"\end{table}" + "\n\n")
 
@@ -438,11 +443,12 @@ def airfoil_self_noise() -> Dict[str, Any]:
     # Evaluate Top 5
     top_5_metrics = evaluate_top_5(top_5, air_X_test, air_y_test, "GBM")
     
-    # Get importances of the #1 model (rank 1)
-    best_model_params, best_model_obj = top_5[0]
-    importances_df = get_feature_importances(best_model_obj, air_X_train.columns)
+    # Get importances comparison
+    importances_df = get_top_5_importances(top_5, air_X_train.columns)
 
-    # Standard existing plots
+    # Standard existing plots for best model
+    best_model_obj = top_5[0][1]
+    
     pi_fig = permutation_importance_plot(
         best_model_obj, air_X_test, air_y_test, OUTPUT_DIR / 'airfoil_perm_importance.pdf'
     )
@@ -482,8 +488,8 @@ def concrete_data() -> Dict[str, Any]:
 
     top_5_metrics = evaluate_top_5(top_5, concrete_X_test, concrete_y_test, "GBM")
     
-    best_model_params, best_model_obj = top_5[0]
-    importances_df = get_feature_importances(best_model_obj, concrete_X_train.columns)
+    importances_df = get_top_5_importances(top_5, concrete_X_train.columns)
+    best_model_obj = top_5[0][1]
 
     pi_fig = permutation_importance_plot(
         best_model_obj,
@@ -525,8 +531,8 @@ def wine_data() -> Dict[str, Any]:
 
     top_5_metrics = evaluate_top_5(top_5, wine_X_test, wine_y_test, "Random Forest")
     
-    best_model_params, best_model_obj = top_5[0]
-    importances_df = get_feature_importances(best_model_obj, wine_X_train.columns)
+    importances_df = get_top_5_importances(top_5, wine_X_train.columns)
+    best_model_obj = top_5[0][1]
 
     pi_fig = permutation_importance_plot(
         best_model_obj, wine_X_test, wine_y_test, OUTPUT_DIR / 'wine_perm_importance.pdf'

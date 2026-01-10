@@ -236,11 +236,14 @@ Con el fin de seguir identificando las interacciones entre las variables los aut
 
 lo cual significa que la relación entre $x_S$ y $\hat{f}$ no depende de $x_C$. Cuando esto se cumple todas las líneas deberían ser equivalentes.
 
-\subsubsection{Causalidad}
+\section{Extensiones}
 
-Pese a que \cite{pearl_2018} menciona por qué los modelos de aprendizaje automático no pueden ser utilizados para hacer inferencia causal, dado que todos estos modelos se basan en el nivel de asociación entre variables, sin llegar a la intervención o contrafactuales. Sin embargo, \cite{Zhao_2021} plantea que los PDPs y ICEs bajo ciertas condiciones pueden tener una interpretación en causal.
+\subsection{Causalidad}
 
-Los autores se basan en que \autoref{eq:pdp} es igual al \textit{backdoor adjustment} definido por \cite{Pearl1993} como
+Tal como señala \cite{pearl_2018}, los modelos de aprendizaje automático convencionales se basan en asociaciones estadísticas y no suelen emplearse para la inferencia causal, ya que no contemplan intervenciones ni escenarios contrafactuales. No obstante, resulta de gran interés analizar cómo, bajo ciertos supuestos, algunas técnicas de interpretabilidad pueden admitir una lectura causal. Este es el eje central del trabajo de \cite{Zhao_2021}, donde se demuestra que los PDPs y los ICEs poseen una interpretación causal bajo condiciones específicas.
+
+Los autores se basan en que \autoref{eq:pdp} puede expresarse como el \textit{backdoor adjustment} definido por \cite{Pearl1993} como
+
 \begin{equation}
     \label{eq:back-door}
 P(Y|do(X_S=x_S))=\int P(Y|X_S=x_S, X_C=x_C)dP(x_C)    
@@ -272,10 +275,11 @@ podemos vincular ambas expresiones de la siguiente forma:
 \end{aligned}
 \end{equation}
 
-
 por lo que puede verse que \autoref{eq:pdp} y \autoref{eq:back-door-expectation} son equivalentes si condicionando en el set $C$ es complementario al set $S$.
 
-\section{Relación con el proceso generador de los datos} 
+Sin embargo, existen otros \textit{frameworks} que se centran expresamente en la inferencia causal, como el \textit{Double Machine Learning} (DML) \cite{Chernozhukov_2018} y los \textit{Causal Forests} \cite{Wager_2018}. El DML utiliza modelos de aprendizaje automático para estimar los \textit{nuisance parameters} que relacionan tanto el tratamiento como el resultado con los \textit{confounders}. Mediante el uso de \textit{cross-fitting}, este enfoque permite obtener estimadores del efecto causal con propiedades estadísticas deseables, como la normalidad asintótica, incluso cuando se utilizan modelos de alta complejidad como ensambles de arboles o redes neuronales. Por otro lado, los \textit{Causal Forests} extienden los \textit{Random Forests} para la estimación de efectos de tratamiento heterogéneos (CATE). En lugar de centrarse en la predicción del resultado observado, este método adapta la función de pérdida para maximizar la varianza de los efectos del tratamiento estimados a través de las particiones. Esto permite aislar subgrupos con respuestas diferenciales a la intervención, capturando así la estructura local de la heterogeneidad causal. Como puede verse, estos enfoques no incluyen las técnicas de interpretación de variables clásicas de los modelos de aprendizaje automático, por lo que su estudio en profundidad queda fuera del alcance de este trabajo.
+
+\subsection{Relación con el proceso generador de los datos} 
 
 Es interesante considerar que, aunque los modelos de aprendizaje automático suelen superar en rendimiento predictivo a los métodos estadísticos convencionales, estos últimos permiten establecer un vínculo directo entre los parámetros del modelo y las propiedades del proceso generador de datos (DGP). Esta capacidad resulta fundamental para comprender en profundidad la naturaleza subyacente de la población.
 
