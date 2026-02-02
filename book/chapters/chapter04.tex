@@ -64,7 +64,7 @@ De esta forma se obtiene cuanto afecta cada covariable a la variable de respuest
 Para calcular $L_{perm}$ los autores proponen dos alternativas. La primera consiste en realizar una permutación por todas las observaciones:
 
 \begin{equation}
-    \hat{e}_{perm}(F)\frac{1}{n(n-1)}\sum_{i=1}^n\sum_{j\neq i}L\{f,y_j,X_{1[i,.]},X_{2[i,.]} \}
+    \hat{e}_{perm}(F) = \frac{1}{n(n-1)}\sum_{i=1}^n\sum_{j\neq i}L\{f,y_j,X_{1[i,.]},X_{2[i,.]} \}
 \end{equation}
 
 Sin embargo esto puede ser computacionalmente muy pesado, por lo que proponen como alternativa dividir la muestra a la mitad y reemplazar los valores de $X_1$ de la primera mitad con los de la segunda y viceversa:
