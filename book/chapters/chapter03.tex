@@ -52,13 +52,10 @@ volviendo a la varianza total:
     \end{aligned}
 \end{equation}
 
-Por lo tanto:
-
 Por lo tanto, cuando $B \to \infty$, el término $\frac{1}{B} \to 0$ y la varianza se aproxima a $\rho\sigma^2$. Esto implica que la reducción de la varianza depende tanto de $B$ como de $\rho$. Dado que la correlación entre árboles $\rho$ es menor a 1, la varianza final ($\rho\sigma^2$) resultará menor que la varianza original ($\sigma^2$), demostrando la efectividad del método. 
 
-\textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace una muestra \textit{bootstrap} solamente se toma en cuenta aproximadamente el 63\% de los datos.
+\textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace una muestra \textit{bootstrap} solamente se toma en cuenta aproximadamente el 63\% de los datos. Para demostrarlo, partimos de la probabilidad de No ser seleccionado en una muestra:
 
-Para probar que \textit{Bootstrap} solo ve aproximadamente 2/3 de los datos, partimos de la probabilidad de No ser seleccionado en una muestra:
 \begin{equation}
 P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}    
 \end{equation}
@@ -76,7 +73,7 @@ cuando $n\rightarrow \infty$:
 	
 Esto significa que la probabilidad de ser seleccionado al menos una vez es $1-\frac{1}{e} \approx 0.632$. Es decir, aproximadamente el 63.2\% de las observaciones serán incluidas en cada muestra \textit{bootstrap}, mientras que el restante 36.8\% de las observaciones quedarán fuera de la muestra (\textit{out-of-bag}).
 
-Este resultado permite estimar el error usando las observaciones \textit{out-of-bag} como muestra de testeo. Con un $B$ suficientemente grande, este error es asintóticamente equivalente a \textit{leave-one-out cross validation}, lo cual es particularmente útil cuando se cuenta con una muestra grande donde el \textit{cross validation} tradicional sería computacionalmente costoso. Esta relación se evidencia en la \autoref{fig:obb-vs-loocv}, que compara las estimaciones de error \textit{out-of-bag} y \textit{leave-one-out cross validation} utilizando el conjunto de datos \textit{Abalone} y variando la cantidad de árboles $B$. Se observa claramente que, al incrementar el número de árboles, ambas métricas convergen hacia valores similares.
+Este resultado permite estimar el error usando las observaciones \textit{out-of-bag} como muestra de testeo. Con un $B$ suficientemente grande, este error es asintóticamente equivalente a \textit{leave-one-out cross validation}, lo cual es particularmente útil cuando se cuenta con una muestra grande donde el \textit{leave-one-out cross validation} tradicional sería computacionalmente costoso. Esta relación se evidencia en la \autoref{fig:obb-vs-loocv}, que compara las estimaciones de error \textit{out-of-bag} y \textit{leave-one-out cross validation} utilizando el conjunto de datos \textit{Abalone} y variando la cantidad de árboles $B$. Se observa claramente que, al incrementar el número de árboles, ambas métricas convergen hacia valores similares.
 
 \begin{figure}[ht!]
     \centering
@@ -89,7 +86,7 @@ Una de las limitaciones de \textit{Bagging} es que, al utilizar todas las variab
 
 \subsection{Random Forest}
 
-\textit{Random Forest} \cite{breiman2001a} propone una mejora con respecto a \textit{Bagging} al tener en cuenta solo un sub-conjunto de las covariables para cada \textit{split}. Esto permite que los árboles sean distintos entre ellos, haciendo que los árboles estén menos correlacionados entre ellos y por lo tanto reduciendo más el error.
+\textit{Random Forest} \cite{breiman2001a} propone una mejora con respecto a \textit{Bagging} al tener en cuenta solo un sub-conjunto de las covariables para cada \textit{split}. Esto permite que los árboles sean distintos entre ellos, haciendo que estén menos correlacionados y por lo tanto reduciendo más el error.
 
 El parámetro que define la cantidad de variables que se tiene cuenta en cada \textit{split} se denomina $m$. Cabe destacar que un \textit{Random Forest} con $m=p$, siendo $p$ la cantidad de covariables, es \textit{Bagging}. Por lo que \textit{Random Forest} puede considerarse un caso particular de \textit{Bagging}.
 
@@ -219,7 +216,7 @@ Si bien el algoritmo de \textit{Boosting} puede utilizar múltiples modelos base
 
 Como se mencionó anteriormente, una de las ventajas de los árboles de decisión es poder capturar interacciones entre las covariables. Esta característica puede ser regulada mediante un hiperparámetro que indica la profundidad máxima de los árboles. En particular, la literatura sugiere utilizar árboles de poca profundidad en este tipo de modelos. Siendo los \textit{stumps} los árboles de profundidad 1 los más utilizados.
 
-En la \autoref{fig:gbm-depth-effect} se puede ver el efecto de la profundidad de los árboles en el error del modelo. Puede verse que a medida que aumenta la profundidad del árbol, el error disminuye hasta llegar a aproximadamente 10, luego de lo cual el error se estabiliza.
+En la \autoref{fig:gbm-depth-effect} se puede ver el efecto de la profundidad de los árboles en el error del modelo donde queda claro como arboles con poca profundidad tienen errores más bajos que los árboles de profundidad mayor.
 
 \begin{figure}[ht!]
     \centering
