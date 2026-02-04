@@ -1,6 +1,6 @@
 Tal como se mencionó anteriormente, uno de los \textit{trade-off} de los ensambles de árboles es que al agrupar múltiples árboles el modelo en conjunto deja de ser interpretable. Esto puede no suponer un problema si el objetivo es predecir, pero si el objetivo es interpretar el modelo el hecho de trabajar con 'cajas negras' puede ser un problema.
 
-Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. Pese a que existen distintas técnicas para interpretar modelos, algunas son específicas para ciertos tipos de modelos mientras que otras son agnósticas. En este trabajo se estudiará como acceder a la importancia de cada covariable y al efecto que tiene cada una de ellas sobre la variable dependiente.
+Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. Pese a que existen distintas técnicas para interpretar modelos, algunas son específicas para ciertos tipos de modelos mientras que otras son agnósticas al modelo. En este trabajo se estudiará como acceder a la importancia de cada covariable y al efecto que tiene cada una de ellas sobre la variable dependiente.
 
 \section{Importancia de las variables}
 
@@ -31,7 +31,8 @@ El problema de las variables correlacionadas radica en que el modelo no puede di
 
 En el caso de las variables categóricas, este método prioriza aquellas variables que son propensas a tener muchos \textit{splits}, sin que esto signifique que las variables son importantes o estan reduciendo el error.
 
-\subsection{Permutation Feature Importance} 
+%#TODO: reescribir esto, lo invent'o breiman y fischer lo generalizo
+\subsection{\textit{Permutation Feature Importance}} 
 
 Otra alternativa para calcular las importancias de las variables es utilizar \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} exclusivamente para \textit{Random Forest} que luego fue generalizada para cualquier modelo \cite{fischer_2019}. Estas técnicas se basan, intuitivamente, en entender cómo cambia la función de pérdida cuando se permutan las variables. Las variables más importantes serán aquellas que más cambien el error del modelo al ser permutadas.
 Como se ve a continuación, si bien \cite{fischer_2019} propone métodos para calcular la importancia en modelos de clasificación, se presentará la adaptación a un modelo de regresión. Por lo que habiendo entrenado un modelo de \textit{random forest} $\hat{f}$ para cada covariable $j \in \{1,2,...,p\}$, se construye un nuevo conjunto de datos $X_j$ permutando las observaciones de la covariable $j$ y dejando el resto de las observaciones fijas. Posteriormente, se entrena un nuevo modelo $\hat{f}_j$ utilizando el nuevo conjunto de datos $X_j$ y se calcula el error \textit{out-of-bag}:
@@ -67,7 +68,7 @@ Para calcular $L_{perm}$ los autores proponen dos alternativas. La primera consi
     \hat{e}_{perm}(F) = \frac{1}{n(n-1)}\sum_{i=1}^n\sum_{j\neq i}L\{f,y_j,X_{1[i,.]},X_{2[i,.]} \}
 \end{equation}
 
-Sin embargo esto puede ser computacionalmente muy pesado, por lo que proponen como alternativa dividir la muestra a la mitad y reemplazar los valores de $X_1$ de la primera mitad con los de la segunda y viceversa:
+Sin embargo esto puede ser computacionalmente muy intensivo, por lo que proponen como alternativa dividir la muestra a la mitad y reemplazar los valores de $X_1$ de la primera mitad con los de la segunda y viceversa:
 
 \begin{equation}
     \begin{aligned}
@@ -79,7 +80,7 @@ Sin embargo esto puede ser computacionalmente muy pesado, por lo que proponen co
 \end{equation}
 
 
-\subsection{Model Class Reliance} 
+\subsection{\textit{Model Class Reliance}} 
 Un problema común a la hora de calcular importancias es que el modelo que terminamos usando se decide únicamente en función de una métrica de error. Esto no supondría inconvenientes si las importancias de los modelos fueran parecidas. Sin embargo, suele pasar que para muchos modelos con un poder predictivo similar las importancias de las variables cambien. A continuación se presenta un ejemplo en el cual se entrenaron múltiples \textit{Gradient Boosting Machines} con diferentes combinaciones de hiperparámetros, eligiendo las combinaciones que minimicen el error cuadrático medio. Para el elegir dicha combinación se utilizó validación cruzada con $k=5$. El conjunto de datos para este ejemplo en particular fue \textit{Abalone} \cite{abalone_1} donde se busca predecir la edad del Abalone en función de distintas características.
 
 Específicamente, para este ejemplo se entrenaron modelos con cantidad de árboles de 100 a 900 (con incrementos de 100), tasas de aprendizaje de 0.01, 0.05 y 0.1, profundidad máxima de 2, 3, 4 y 5, y funciones de pérdida de tipo pérdida cuadrática, error absoluto y Huber. Siendo un total de 324 modelos entrenados. En la \autoref{tbl:display-importances} se pueden ver los 15 modelos que menor error tuvieron, junto con los hiperparámetros asociados. Puede verse claramente, como hay múltiples modelos que tienen una performance predictiva similar pero distintos hiperparámetros.
