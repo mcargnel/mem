@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeRegressor, plot_tree
 from sklearn.metrics import mean_squared_error
+from ucimlrepo import fetch_ucirepo
 
 # Configure logging
 logging.basicConfig(
@@ -20,53 +21,32 @@ logger = logging.getLogger(__name__)
 OUTPUT_DIR = Path(__file__).parent.parent / 'output/chapter_2'
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-def generate_data() -> tuple:
+def fetch_abalone_data():
     """
-    Generate synthetic regression data with complex relationships.
+    Fetch the Abalone dataset from UCI repository and prepare it for regression tasks.
     
     Returns:
         tuple: X_train, X_test, y_train, y_test
     """
-    logger.info("Generating synthetic data...")
+    logger.info("Fetching Abalone dataset from UCI repository...")
     
-    # Set random seed for reproducibility
-    np.random.seed(73815)
-    n = 1000
-    
-    # Generate random features
-    X = np.random.uniform(0, 1, (n, 10))
-    X_cols = [f'X_{i+1}' for i in range(10)]
-    logger.info(f"Generated {n} samples with {len(X_cols)} features")
+    # Fetch the abalone dataset
+    abalone = fetch_ucirepo(id=1)
 
-    # Create complex target variable with multiple non-linear relationships
+    # Prepare features and targets: drop the 'Sex' column and ensure y is 1D.
+    X = abalone.data.features.drop('Sex', axis=1)
+    # Convert y to a 1D array (using .values.ravel() or .squeeze())
     y = (
-        X[:, 0]**2 + 
-        np.sin(X[:, 1]) - 
-        np.exp(X[:, 2]) + 
-        np.log1p(X[:, 3]) + 
-        X[:, 4] * X[:, 5] + 
-        X[:, 6] * X[:, 7] * X[:, 8] - 
-        np.sqrt(X[:, 9]) + 
-        X[:, 0] * X[:, 1] - 
-        X[:, 2] * X[:, 3] + 
-        X[:, 4] * X[:, 5] * X[:, 6] +
-        np.random.normal(0, 0.1, n)  # Add noise
+        abalone.data.targets.values.ravel() 
+        if hasattr(abalone.data.targets, 'values') 
+        else abalone.data.targets.squeeze()
     )
 
-    # Create DataFrame
-    df = pd.DataFrame(X, columns=X_cols)
-    df['y'] = y
-    logger.info(f"Target variable statistics: mean={y.mean():.3f}, std={y.std():.3f}")
-
-    # Separate features and target
-    X = df.drop(columns='y')
-    y = df['y']
-
-    # Split into train and test sets
+    # Split the data into training and testing sets
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
-    logger.info(f"Train set size: {len(X_train)}, Test set size: {len(X_test)}")
+    logger.info(f"Abalone dataset loaded - Train: {len(X_train)}, Test: {len(X_test)}")
     
     return X_train, X_test, y_train, y_test
 
@@ -199,7 +179,7 @@ def main():
     logger.info("="*60)
     
     # Generate data
-    X_train, X_test, y_train, y_test = generate_data()
+    X_train, X_test, y_train, y_test = fetch_abalone_data()
     
     # Train regression tree
     regression_tree = fit_regression_tree(X_train, y_train)

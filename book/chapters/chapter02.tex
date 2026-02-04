@@ -2,21 +2,21 @@ En este capítulo se hará una revisión sobre árboles de regresión y clasific
 
 Estos modelos entran dentro de la categoría de análisis supervisado no paramétrico, por lo que tienen una gran flexibilidad que les permite modelar naturalmente las interacciones entre variables. Otra de las ventajas de estos algoritmos es su interpretabilidad, dado que es muy sencillo entender el efecto de cada variable explicativa en la variable dependiente siguiendo la estructura del árbol.
 
-Con el objetivo de introducir el modelo estadístico en cuestión, en la \autoref{fig:arbol-decision} se muestra un árbol de decisión cuyo objetivo es predecir el índice de progresión de la diabetes utilizando la edad y el índice de masa corporal (\textit{BMI})\footnote{Los datos provienen de \cite{diabetes_34}}. El árbol se interpreta de arriba hacia abajo, lo que indica que el índice de masa corporal es la variable más relevante, ya que aparece en la primera división. Se observa que niveles más altos de \textit{BMI} están asociados con un aumento en el índice de progresión de la diabetes.
+Con el objetivo de introducir el modelo estadístico en cuestión, en la \autoref{fig:arbol-decision} se muestra un árbol de decisión cuyo objetivo es predecir el número de anillos de un abulón, el cual es un indicador de su edad\footnote{Los datos provienen de \cite{abalone_1}}. El árbol se interpreta de arriba hacia abajo, lo que indica que el peso de la concha (\textit{Shell\_weight}) es la variable más relevante, ya que aparece en la primera división. Se observa que valores más altos de \textit{Shell\_weight} están asociados con un mayor número de anillos.
 
-Por otro lado, la edad también influye en la variable dependiente, pero su efecto se observa después de las primeras condiciones basadas en el \textit{BMI}. Por ejemplo, para pacientes con un \textit{BMI} menor o igual a 24.35 y una edad menor o igual a 57.5, el índice de progresión de la diabetes es 99.69. Esto destaca (1) la facilidad con la que se pueden interpretar visualmente los árboles de decisión y (2) cómo estos modelos representan de manera natural las interacciones entre diferentes variables.
+Por otro lado, el peso de la carne extraída (\textit{Shucked\_weight}) también influye en la variable dependiente, pero su efecto se observa después de las primeras condiciones basadas en el peso de la concha. Por ejemplo, para abulones con un \textit{Shell\_weight} mayor o igual a 0.37 y un \textit{Shucked\_weight} menor o igual a 0.55, el número de anillos predicho es 14.85.
 
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1\textwidth]{images/capitulo_2/regression_tree_structure.pdf}
-    \caption{Árbol de decisión para predecir el índice de progresión de la diabetes utilizando la edad y el índice de masa corporal (\textit{BMI}).}
+    \caption{Árbol de decisión para predecir el número de anillos de un abulón utilizando medidas físicas como el peso de la concha y el peso de la carne extraída.}
     \label{fig:arbol-decision}
 \end{figure}
 
 Con este breve ejemplo se puede apreciar la facilidad con la que se pueden interpretar visualmente los árboles de decisión y cómo estos modelos representan de manera natural las interacciones entre diferentes variables. A continuación, se explicarán los elementos que componen un árbol de decisión y cómo se construyen.
 
 \section{Elementos que componen un árbol}
-Antes de pasar a la construcción de los árboles, es de interés enfatizar que estos modelos se leen de arriba hacia abajo y definir ciertos elementos que los componen. En primer lugar definimos los nodos como los puntos en los cuales se dividen las observaciones. A su vez pueden clasificarse como: la raíz, que es el primer nodo que contiene todas las observaciones y sobre el cual se hace la primera partición; los nodos internos, que son los puntos en los cuales se dividieron las observaciones; y los nodos terminales u hojas, que presentan las predicciones finales del modelo y no tienen descendientes inmediatos.
+Antes de pasar a la construcción de los árboles, es importante definir los elementos que los componen. En primer lugar definimos los nodos como los puntos en los cuales se dividen las observaciones. A su vez pueden clasificarse como: la raíz, que es el primer nodo que contiene todas las observaciones y sobre el cual se hace la primera partición; los nodos internos, que son los puntos en los cuales se dividieron las observaciones; y los nodos terminales u hojas, que presentan las predicciones finales del modelo y no tienen descendientes inmediatos.
 
 Luego, como se ve en la \autoref{fig:arbol-decision}, los nodos definidos anteriormente están unidos por flechas que llamaremos ramas y tienen el objetivo de conectar los distintos nodos del árbol.
 
@@ -42,7 +42,7 @@ MSE(T)=\frac{1}{n}\sum_{j=1}^{J}\sum_{i \in R_j}(Y_i-\hat{Y}_{R_j})^2
 
 con el árbol $T$, $n$ el número total de observaciones en la muestra, $J$ el número de regiones $R$, $Y_i$ el valor real de las observaciones $i$ que se encuentran en la región $R_j$ y $\hat{Y}_{R_j}$ la predicción de nuestro modelo. 
 
-Sin embargo, calcular esta expresión es computacionalmente demasiado caro dado que implica buscar todas las posibles particiones en todas las posibles regiones que se pueden generar con la muestra. A modo de ejemplo esto significa que si tenemos $p$ variables y cada variable tiene $s$ puntos en los que podría ser particionada, el número total de posibles particiones de todas las variables en cada nodo sería $s \cdot p$. Dado que cada partición es binaria, el número de nodos crece exponencialmente con la profundidad del árbol $d$. Es decir que para calcular la cantidad total de particiones posibles ($TP$) para todo el árbol tendríamos que calcular 
+Sin embargo, calcular esta expresión es computacionalmente prohibitivo dado que implica buscar todas las posibles particiones en todas las posibles regiones que se pueden generar con la muestra. A modo de ejemplo esto significa que si tenemos $p$ variables y cada variable tiene $s$ puntos en los que podría ser particionada, el número total de posibles particiones de todas las variables en cada nodo sería $s \cdot p$. Dado que cada partición es binaria, el número de nodos crece exponencialmente con la profundidad del árbol $d$. Es decir que para calcular la cantidad total de particiones posibles ($TP$) para todo el árbol tendríamos que calcular 
 
 \begin{equation}
     TP=\sum_{d=0}^{D}s \cdot p \cdot {2^{d}}
@@ -59,21 +59,21 @@ MSE(T)=\frac{1}{n}\sum_{r=1}^{R}\sum_{i:x_i\in R_r(j,s)}(Y_i-\hat{Y}_{R_r})^2
 
 con $n$ el número de observaciones, $R$ el número total de regiones después de aplicar todas las divisiones, $R_r(j,s)$ es la región $r$ creada al dividir el predictor $X_j$ en el punto de corte $s$, siendo $X_j$ el predictor que minimiza el error, $Y_i$ el valor real de las observaciones $i$ dentro de la región $R_r$ y $\hat{Y}_{R_r}$ los valores predichos para todas las observaciones $i$ en la región $R_r$.
 
-Este algoritmo ya no crece de manera exponencial como el anterior, por lo que es más sencillo de calcular que el anterior.
+Este algoritmo ya no crece de manera exponencial como el anterior, por lo que es más sencillo de calcular.
 
 \subsection{Definir cuándo un nodo es terminal}
 
 Definir cuándo un nodo es terminal es equivalente a establecer una regla de parada en el algoritmo de partición recursiva. En teoría, se podría continuar dividiendo los nodos hasta que cada uno contenga una única observación, lo cual minimizaría el error en la muestra de entrenamiento a cero. No obstante, esto conduciría a un modelo sobreajustado con poca capacidad de predicción en nuevos datos.
 
-Para evitar esto, \cite{CART} proponen definir un nodo como terminal cuando se cumple alguna condición restrictiva. Las condiciones más habituales incluyen que el número de observaciones en el nodo sea menor a un mínimo preestablecido (por ejemplo, $n_{min} = 5$) o que la disminución del error cuadrático medio que se obtendría con la mejor partición posible no supere un cierto umbral. También se detiene el proceso si el nodo es puro, es decir, si todas las observaciones tienen el mismo valor de respuesta.
+Para evitar esto, se puede definir un nodo como terminal cuando se cumple alguna condición restrictiva. Las condiciones más habituales incluyen que el número de observaciones en el nodo sea menor a un mínimo preestablecido (por ejemplo, $n_{min} = 5$) o que la disminución del error cuadrático medio que se obtendría con la mejor partición posible no supere un cierto umbral. También se detiene el proceso si el nodo es puro, es decir, si todas las observaciones tienen el mismo valor de respuesta.
 
 Es importante notar que detener el crecimiento del árbol demasiado pronto puede impedir que se descubran estructuras importantes en los datos que solo aparecerían tras particiones adicionales. Por esta razón, la estrategia recomendada y más utilizada consiste en establecer criterios de parada laxos para construir un árbol inicialmente muy grande ($T_0$), y posteriormente aplicar técnicas de poda (\textit{pruning}) para encontrar el subárbol óptimo, como se explicará más adelante.
 
 \subsection{Asignar valores a nodos terminales}
 
-Dado que la función a optimizar es el error cuadrático medio, se puede probar que la media muestral será la constante que minimice ese error.
+Dado que la función a optimizar es el error cuadrático medio, se puede demostrar que la media muestral será la constante que minimice ese error.
 
-Partimos de que queremos $c$ que minimice
+Partimos de que queremos encontrar el valor de $c$ que minimice
 
 \begin{equation}
     MSE(c)=\frac{1}{n}\sum_{i=1}^{n}(y_i-c)^2 
@@ -104,16 +104,15 @@ y luego igualamos a cero:
 
 Por lo que los valores que tendrán los nodos terminales (predicciones) serán simplemente la media de las observaciones que están en ese nodo.
 
-
 \section{Poda de árboles}
 
 Construir un árbol con demasiadas particiones puede llevar a un sobre ajuste. Básicamente porque si pensamos en el árbol más grande que se puede construir con una muestra, el mismo tendría un nodo terminal por cada observación, lo cual llevaría a un error muy bajo en la muestra de entrenamiento, pero una capacidad de generalización muy mala.
 
-Para evitar esto, buscaremos poner un límite a cuanto puede crecer el árbol, para ello existen múltiples alternativas como fijar cotas a la profundidad del árbol, al número de observaciones que pueden quedar en la misma hoja o bien hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Esta última es una técnica que permite estimar el error de generalización dividiendo el conjunto de datos en $k$ grupos o \textit{folds}. El procedimiento consiste en entrenar el modelo utilizando $k-1$ grupos y evaluarlo en el grupo restante, repitiendo este proceso $k$ veces para que cada grupo funcione como conjunto de prueba una vez. El error de validación final es el promedio de los errores obtenidos en cada iteración, lo que permite seleccionar el parámetro de complejidad que minimiza dicho error.
+Para evitar esto, la técnica que se estudiará se basa en hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Esta última es una técnica que permite estimar el error de generalización dividiendo el conjunto de datos en $k$ grupos o \textit{folds}. El procedimiento consiste en entrenar el modelo utilizando $k-1$ grupos y evaluarlo en el grupo restante, repitiendo este proceso $k$ veces para que cada grupo funcione como conjunto de prueba una vez. El error de validación final es el promedio de los errores obtenidos en cada iteración, lo que permite seleccionar el parámetro de complejidad que minimiza dicho error.
 
 Antes de describir el procedimiento es importante definir $T_0$ como un árbol maximal y considerar que $T'$ sea un subárbol podado de $T$. Para que un árbol sea considerado subárbol de otro tiene que tener $T' = T_0 - T_t$, donde $T_t$ es una rama (subárbol) que se elimina de $T_0$ para obtener $T'$.
 
-El problema de querer encontrar subárboles es que pueden ser demasiados, haciendo que sea computacionalmente demasiado exigente. Es por ello que se utiliza \textit{cost complexity pruning} para trabajar un pequeño número de subárboles. A continuación vemos la ecuación:
+El problema de querer encontrar subárboles es que pueden ser demasiados, haciendo que sea computacionalmente muy exigente. Es por ello que se utiliza \textit{cost complexity pruning} para trabajar un pequeño número de subárboles. A continuación vemos la ecuación:
 
 \begin{equation}
     \sum_{m=1}^{|T|}\sum_{i \in R_m}(Y_i-\hat{Y}_{R_m})^2+ \alpha |T|
@@ -171,7 +170,7 @@ Al ajustar un árbol de regresión a estos datos (limitando la profundidad para 
 
 Dado que este trabajo se centra en la interpretación de modelos, la principal limitación que se destaca es la falta de estabilidad (o alta varianza). Esto significa que pequeños cambios en los datos de entrenamiento pueden dar lugar a particiones muy diferentes y, por ende, a una estructura de árbol completamente distinta. Esta inestabilidad surge de la naturaleza jerárquica del algoritmo: un error o cambio en una división superior se propaga a todas las ramas inferiores \cite{ISLP}. Esto representa un desafío para la interpretación, ya que la importancia de las variables puede variar drásticamente con ligeras modificaciones en la muestra.
 
-Otra limitación relevante es la dificultad que presentan los árboles para capturar estructuras aditivas simples. Mientras que una regresión lineal puede modelar eficientemente una relación del tipo $Y = \beta_0 + \sum \beta_j X_j$, un árbol de decisión necesita realizar múltiples particiones para aproximar esta estructura lineal mediante una función escalonada. Esto suele resultar en una menor capacidad predictiva en comparación con modelos paramétricos cuando la verdadera relación es lineal.
+Otra limitación relevante es la dificultad que presentan los árboles para capturar estructuras aditivas simples. Mientras que una regresión lineal puede modelar eficientemente una relación del tipo $Y = \beta_0 + \sum \beta_j X_j + \epsilon$, un árbol de decisión necesita realizar múltiples particiones para aproximar esta estructura lineal mediante una función escalonada. Esto suele resultar en una menor capacidad predictiva en comparación con modelos paramétricos cuando la verdadera relación es lineal.
 
 Además, las predicciones de los árboles de decisión no son continuas ni suaves, sino constantes por regiones. Esto puede ser una desventaja en problemas donde se espera que la variable respuesta cambie gradualmente con las variables explicativas.
 
