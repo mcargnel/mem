@@ -308,9 +308,9 @@ def permutation_importance_plot(
         edgecolor='black',
         alpha=0.8,
     )
-    ax.set_xlabel('Permutation Importance')
-    ax.set_ylabel('Features')
-    ax.set_title('Feature Importance')
+    ax.set_xlabel('Importancia')
+    ax.set_ylabel('Variables')
+    ax.set_title('Importancia de las variables')
     plt.tight_layout()
 
     if save_path:
@@ -346,11 +346,11 @@ def partial_dependence_plot(
                 ax=[axs[i, j]],
             )
 
-            centered_text = " (Centered)" if centered else ""
-            axs[i, j].set_title(f'PDP of {feature_titles[i]}{centered_text}')
-            axs[i, j].set_ylabel('Partial Dependence')
+            centered_text = " (Centrado)" if centered else ""
+            axs[i, j].set_title(f'PDP de {feature_titles[i]}{centered_text}')
+            axs[i, j].set_ylabel('Dependencia Parcial')
 
-    plt.suptitle('Partial Dependence Plots', fontsize=14)
+    plt.suptitle('PDP', fontsize=14)
     plt.tight_layout(rect=(0, 0, 1, 0.95))
 
     if save_path:

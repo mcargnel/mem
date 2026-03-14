@@ -71,3 +71,4 @@ This is an academic thesis project focused on Interpretable machine learning for
 - Don't alter file content if not explicitly requested
 - Don't use bullet points or numbered lists in LaTeX.
 - Don't use hyphens.
+- Don´t refer to Random Forest as ´Bosques´ or ´Bosque aleatorio´, just use random forest.

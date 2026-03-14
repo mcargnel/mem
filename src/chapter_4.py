@@ -305,7 +305,7 @@ def plot_feature_importances(importance_df: pd.DataFrame, save_path=None) -> Fig
     ax.tick_params(axis='y', labelsize=10)
 
     # Add grid for better readability
-    ax.legend(title='Models', title_fontsize=11, fontsize=9, loc='best')
+    ax.legend(title='Modelos', title_fontsize=11, fontsize=9, loc='best')
 
     plt.tight_layout()
     
@@ -343,8 +343,8 @@ def plot_importance_heatmap(importance_df: pd.DataFrame, save_path=None) -> Figu
 
     # Improve title and labels
     plt.title('Ranking de importancia de variables entre modelos', fontsize=14)
-    plt.xlabel('Variables', fontsize=12)
-    plt.ylabel('Modelos', fontsize=12)
+    plt.xlabel('Modelos', fontsize=12)
+    plt.ylabel('Variables', fontsize=12)
 
     # Adjust font sizes for axes
     plt.xticks(fontsize=11, rotation=45, ha='right')
@@ -410,7 +410,7 @@ def figure_partial_dependence(
     )
 
     # Customize the plot
-    ax.set_title(f'Partial Dependence Plot for {feature_name}', fontsize=12)
+    ax.set_title(f'Partial Dependence Plot para {feature_name}', fontsize=12)
     
     if save_path:
         save_path_pdf = str(save_path).replace('.png', '.pdf')
@@ -453,7 +453,7 @@ def figure_ice_plots(
     )
 
     # Customize the plot
-    ax.set_title(f'ICE Plot for {feature_name}', fontsize=12)
+    ax.set_title(f'ICE para {feature_name}', fontsize=12)
     
     if save_path:
         save_path_pdf = str(save_path).replace('.png', '.pdf')
@@ -498,7 +498,7 @@ def figure_centered_ice_plots(
         pd_line_kw={'color': 'tab:red', 'linewidth': 2}
     )
 
-    ax.set_title(f'Centered ICE Plots for {feature_name}', fontsize=12)
+    ax.set_title(f'ICE Centrado para {feature_name}', fontsize=12)
     plt.tight_layout()
     
     if save_path:

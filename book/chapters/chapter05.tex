@@ -185,7 +185,7 @@ Antes del modelado, se detectó una alta colinealidad entre el dióxido de azufr
     \label{fig:wine_corr}
 \end{figure}
 
-Los resultados en el conjunto de prueba (\autoref{tbl:wine_predictions}) presentan un cambio notable respecto a los casos anteriores: aquí, \textit{Random Forest} obtiene la mejor, superando incluso a \textit{Gradient Boosting}. Aunque los valores de $R^2$ son en general más bajos que en los otros conjuntos de datos, lo cual es típico en problemas de calidad subjetiva con alta varianza, el bosque aleatorio logra explicar casi el 50\% de la variabilidad.
+Los resultados en el conjunto de prueba (\autoref{tbl:wine_predictions}) presentan un cambio notable respecto a los casos anteriores: \textit{Random Forest} obtiene los mejores resultados, superando incluso a \textit{Gradient Boosting}. Aunque los valores de $R^2$ son en general más bajos que en los otros conjuntos de datos.
 
 \begin{table}[ht!]
     \centering
@@ -221,4 +221,4 @@ El análisis de dependencia parcial (\autoref{fig:wine_partial_dependence}) arro
     \label{fig:wine_partial_dependence}
 \end{figure}
 
-En conclusión, la aplicación de estas técnicas en tres dominios dispares demuestra su versatilidad. Más allá de la precisión predictiva, donde los ensambles dominaron, herramientas como PFI y PDP permitieron traducir cajas negras matemáticas en conocimientos de dominio tangibles: la importancia de las frecuencias bajas en el ruido aerodinámico, el rol crítico del curado en el concreto, y la preferencia por vinos con mayor grado alcohólico y menor acidez volátil.
+En conclusión, la aplicación de estas técnicas en tres dominios distintos demuestra su versatilidad. Más allá de la precisión predictiva, donde los ensambles dominaron, herramientas como PFI y PDP permitieron interpretar el efecto de las variables en los modelos más complejos con mayor capacidad predictiva.

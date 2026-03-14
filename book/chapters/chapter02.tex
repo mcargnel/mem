@@ -42,7 +42,7 @@ MSE(T)=\frac{1}{n}\sum_{j=1}^{J}\sum_{i \in R_j}(Y_i-\hat{Y}_{R_j})^2
 
 con el árbol $T$, $n$ el número total de observaciones en la muestra, $J$ el número de regiones $R$, $Y_i$ el valor real de las observaciones $i$ que se encuentran en la región $R_j$ y $\hat{Y}_{R_j}$ la predicción de nuestro modelo. 
 
-Sin embargo, calcular esta expresión es computacionalmente prohibitivo dado que implica buscar todas las posibles particiones en todas las posibles regiones que se pueden generar con la muestra. A modo de ejemplo esto significa que si tenemos $p$ variables y cada variable tiene $s$ puntos en los que podría ser particionada, el número total de posibles particiones de todas las variables en cada nodo sería $s \cdot p$. Dado que cada partición es binaria, el número de nodos crece exponencialmente con la profundidad del árbol $d$. Es decir que para calcular la cantidad total de particiones posibles ($TP$) para todo el árbol tendríamos que calcular 
+Sin embargo, calcular esta expresión es computacionalmente prohibitivo dado que implica buscar todas las posibles particiones en todas las posibles regiones que se pueden generar con la muestra. A modo de ejemplo, esto significa que si tenemos $p$ variables y cada variable tiene $s$ puntos en los que podría ser particionada, el número total de posibles particiones de todas las variables en cada nodo sería $s \cdot p$. Dado que cada partición es binaria, el número de nodos crece exponencialmente con la profundidad del árbol $d$. Es decir que para calcular la cantidad total de particiones posibles ($TP$) para todo el árbol tendríamos que calcular 
 
 \begin{equation}
     TP=\sum_{d=0}^{D}s \cdot p \cdot {2^{d}}
@@ -95,9 +95,6 @@ y luego igualamos a cero:
 \begin{equation}
     \begin{aligned}
         -\frac{2}{n}\sum_{i=1}^{n}(y_i-c)&=0  \\
-        \sum_{i=1}^{n}(y_i-c)&=0  \\
-        \sum_{i=1}^{n}y_i-nc&=0  \\
-        \sum_{i=1}^{n}y_i&=nc  \\
         \frac{1}{n}\sum_{i=1}^{n}y_i&=c  \\
     \end{aligned}
 \end{equation}

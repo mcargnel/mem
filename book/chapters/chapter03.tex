@@ -1,6 +1,4 @@
-Como se mencionó anteriormente, dos de los problemas principales de los árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que en este capítulo se estudian dos métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}. 
-
-Los ensambles mejoran la capacidad predictiva y reducen la variabilidad. La idea general es agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
+Como se mencionó anteriormente, dos de los problemas principales de los árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que en este capítulo se estudian dos métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}. Estas técnicas mejoran la capacidad predictiva y reducen la variabilidad al agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
 
 \section{\textit{Bagging}}
 
@@ -23,32 +21,32 @@ Partiendo de las predicciones
 calcular el error viene dado por
 
 \begin{equation}
-    MSE=E[(y-\hat{f}_{bag}(x))^2] = \text{Sesgo}^2 + \text{Varianza}+ \sigma^2
+    MSE=E\Big[\big(y-\hat{f}_{bag}(x)\big)^2\Big] = \text{Sesgo}^2 + \text{Varianza}+ \sigma^2
 \end{equation}
 
 ahora nos concentramos en cómo la varianza afecta al error
 \begin{equation}
-    Var(\hat{f}_{bag}(x))=Var(\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x))=\frac{1}{B^2}Var(\sum_{b=1}^{B}\hat{f}^b(x))
+    Var\Big(\hat{f}_{bag}(x)\Big)=Var\Bigg(\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)=\frac{1}{B^2}Var\Bigg(\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)
 \end{equation}
 
 asumiendo que los $\hat{f}^b(x)$ están idénticamente distribuidos, se puede reescribir:
 
 \begin{equation}
-    Var(\sum_{b=1}^{B}\hat{f}^b(x))=\sum_{b=1}^B Var(\hat{f}^b(x)) + \sum_{i=1}^B\sum_{j\neq i}^B cov(\hat{f}^i(x), \hat{f}^j(x))
+    Var\Bigg(\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)=\sum_{b=1}^B Var\Big(\hat{f}^b(x)\Big) + \sum_{i=1}^B\sum_{j\neq i}^B cov\Big(\hat{f}^i(x), \hat{f}^j(x)\Big)
 \end{equation}
 
 ahora asumiendo varianzas iguales ($Var(\hat{f}^b(x))=\sigma^2$) y correlaciones idénticas ($\rho$) para cada par de árboles:
 
 \begin{equation}
-    Var(\sum_{b=1}^{B}\hat{f}^b(x))=B\sigma^2 + B(B-1)\rho\sigma^{2}
+    Var\Bigg(\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)=B\sigma^2 + B(B-1)\rho\sigma^{2}
 \end{equation}
 
 volviendo a la varianza total:
 
 \begin{equation}
     \begin{aligned}
-		Var(\hat{f}_{bag}(x)) &= \frac{1}{B^2}(B\sigma^{2}+B(B-1)\rho\sigma^{2}) \\
-		&= \sigma^{2}(\frac{1}{B}+\frac{\rho B(B-1)}{B^2})
+		Var\Big(\hat{f}_{bag}(x)\Big) &= \frac{1}{B^2}\Big(B\sigma^{2}+B(B-1)\rho\sigma^{2}\Big) \\
+		&= \sigma^{2}\Bigg(\frac{1}{B}+\frac{\rho B(B-1)}{B^2}\Bigg)
     \end{aligned}
 \end{equation}
 
@@ -62,13 +60,13 @@ P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}
 	
 Luego, como se toman $n$ muestras con reemplazo, la probabilidad de no ser seleccionado en ninguna muestra es
 \begin{equation}
-P(\text{No ser seleccionado en ninguna muestra}) = (1-\frac{1}{n})^{n}
+P(\text{No ser seleccionado en ninguna muestra}) = \Bigg(1-\frac{1}{n}\Bigg)^{n}
 \end{equation}
 	
 cuando $n\rightarrow \infty$:
 	
 \begin{equation}
-\lim_{n\rightarrow \infty}(1-\frac{1}{n})^{n} = \frac{1}{e}\approx 0.368
+\lim_{n\rightarrow \infty}\Bigg(1-\frac{1}{n}\Bigg)^{n} = \frac{1}{e}\approx 0.368
 \end{equation}
 	
 Esto significa que la probabilidad de ser seleccionado al menos una vez es $1-\frac{1}{e} \approx 0.632$. Es decir, aproximadamente el 63.2\% de las observaciones serán incluidas en cada muestra \textit{bootstrap}, mientras que el restante 36.8\% de las observaciones quedarán fuera de la muestra (\textit{out-of-bag}).
@@ -125,7 +123,7 @@ Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\
 
 Donde $x_i$ es un vector de covariables y $y_i$ es la variable de respuesta, en este caso, continua. Por lo que se trata de un problema de regresión.
 
-El algoritmo de \textit{Gradient Boosting Machines} propone un método para encontrar un aproximación de la función $f(x)$ que minimiza una función de pérdida $L(y,f(x))$:
+El algoritmo de \textit{Gradient Boosting Machine} propone un método para encontrar un aproximación de la función $f(x)$ que minimiza una función de pérdida $L(y,f(x))$:
 
 \begin{equation}
 \hat{f}(x)=\arg\min_{f}\frac{1}{n}\sum_{i=1}^{n}L(y_i,f(x_i))
@@ -139,7 +137,7 @@ En definitiva, se ve que la forma de aproximar la función $f(x)$ es a través d
 
 \subsection{Algoritmo}
 
-El algoritmo de \textit{Gradient Boosting Machines} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
+El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
 
 \begin{enumerate}
     \item Inicializar $\hat{f}_0(x)$ con una constante.
@@ -149,7 +147,7 @@ El algoritmo de \textit{Gradient Boosting Machines} requiere un conjunto de dato
         \item Ajustar el modelo base $h_b(x,\theta_b)$ a los datos $(X,g_b(X))$.
         \item Encontrar el mejor tamaño de paso $\gamma_b$:
     \begin{equation}
-    \gamma_b=\arg\min_{\gamma}\sum_{i=1}^{n}L(y_i,\hat{f}_{b-1}(x_i)+\gamma h_b(x_i,\theta_b))    
+    \gamma_b=\arg\min_{\gamma}\sum_{i=1}^{n}L\Big(y_i,\hat{f}_{b-1}(x_i)+\gamma h_b(x_i,\theta_b)\Big)    
     \end{equation}
     \item Actualizar la aproximación:
     \begin{equation}
@@ -184,7 +182,7 @@ Luego, como el gradiente indica la dirección de máximo crecimiento, el negativ
 - g_b(x)=y-f(x)
 \end{equation}
 
-Lo cual es simplemente el residuo.
+Lo cual es simplemente el residuo cuando se realiza la estimación.
 
 \subsubsection{Alternativas robustas}
 
@@ -225,15 +223,15 @@ En la \autoref{fig:gbm-depth-effect} se puede ver el efecto de la profundidad de
     \label{fig:gbm-depth-effect}
 \end{figure}
 
-\subsection{ Regularización}
+\subsection{Regularización}
 Uno de los principales problemas de los modelos de aprendizaje automático es el sobreajuste. Es decir, que el modelo se ajuste demasiado a los datos de entrenamiento y por lo tanto no generalice bien a nuevos datos. Esto se da porque las funciones que se utilizan son muy flexibles y pueden llegar a ajustarse al conjunto de datos, por lo que existen determinadas técnicas para evitar esto. En este trabajo, se estudiarán tres técnicas: \textit{subsampling}, \textit{shrinkage} y \textit{early stopping}.
 
-\subsubsection{ Subsampling}
-La idea intuitiva detrás del \textit{subsampling} es introducir variabilidad en el entrenamiento del modelo. Esto se logra al considerar un subconjunto de las observaciones para cada iteración del algoritmo. El sampleo puede ser con o sin reemplazo. Cabe aclarar que para definir la proporción de la muestra que se utiliza, se utiliza el hyperparámetro \textit{bag fraction} que toma valores entre 0 y 1. Por ejemplo, si se tiene una muestra de 1000 observaciones y se utiliza un \textit{bag fraction} de 0.1, se utilizarán 100 observaciones para cada iteración.
+\subsubsection{\textit{Subsampling}}
+La idea intuitiva detrás del \textit{subsampling} es introducir variabilidad en el entrenamiento del modelo. Esto se logra al considerar un subconjunto de las observaciones para cada iteración del algoritmo. El muestreo puede ser con o sin reemplazo. Cabe aclarar que para definir la proporción de la muestra que se utiliza, se utiliza el hyperparámetro \textit{bag fraction} que toma valores entre 0 y 1. Por ejemplo, si se tiene una muestra de 1000 observaciones y se utiliza un \textit{bag fraction} de 0.1, se utilizarán 100 observaciones para cada iteración.
 
 Pese a que esta técnica puede ayudar a en casos donde los \textit{datasets} sean muy grandes y el costo computacional sea alto, al solo considerar una parte de las observaciones el entrenamiento puede ser menos preciso por lo que se debe balancear.
 
-\subsubsection{ Shrinkage}
+\subsubsection{\textit{Shrinkage}}
 \textit{Shrinkage} se utiliza para reducir el efecto de los árboles individuales en el modelo. Intuitivamente, es un hiperparámetro que permite regular cuánto se toman en cuenta los errores de los árboles anteriores y se basa en que es preferible mejorar poco a poco las predicciones.
 
 En definitiva, el shrinkage puede incluirse $\hat{f}_b(x)$ como:
