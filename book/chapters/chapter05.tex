@@ -4,11 +4,11 @@ Se comparan cuatro tipos de modelos: regresión lineal, árboles de decisión, \
 
 La configuración de hiperparámetros explorada para los árboles de decisión incluye variaciones en la profundidad máxima (10, 20, 30) y los criterios de división (mínimo de observaciones para dividir: 2, 5, 10; mínimo por hoja: 1, 2, 4). Para los métodos de ensamble, \textit{Random Forest} y \textit{Gradient Boosting}, se ajusta el número de estimadores (de 100 a 2000), sumando en este último la tasa de aprendizaje o \textit{learning rate} (0.01, 0.1, 0.2).
 
-Por último, se analiza la estabilidad de la importancia de variables (PFI) entre los cinco mejores modelos de cada caso. La consistencia en estos resultados sugiere robustez en la interpretación; de lo contrario, podríamos estar ante la presencia de \textit{Rashomon Sets}, donde modelos con capacidades predictivas similares ofrecen explicaciones contradictorias del fenómeno. El objetivo no es necesariamente obtener el modelo perfecto, sino ilustrar la aplicación práctica de las metodologías de interpretabilidad discutidas.
+Por último, se analiza la estabilidad de la importancia de variables (PFI) entre los cinco mejores modelos de cada caso. La consistencia en estos resultados sugiere robustez en la interpretación; de lo contrario, podríamos estar ante la presencia de \textit{Rashomon Sets}, donde modelos con capacidades predictivas similares ofrecen explicaciones contradictorias del fenómeno. El objetivo no es necesariamente obtener el modelo perfecto, sino ilustrar la aplicación práctica algunas de las metodologías de interpretabilidad discutidas.
 
 \section{\textit{Airfoil Self-Noise}}
 
-El primer conjunto de datos proviene de la NASA y describe pruebas aerodinámicas y acústicas realizadas en un túnel de viento anecoico sobre diferentes secciones de palas \cite{airfoil_self-noise_291}. El objetivo es predecir la presión sonora escalada en decibelios (\textit{scaled-sound-pressure}) a partir de características físicas y operativas. La muestra consta de 1503 observaciones completas (sin valores faltantes) que incluyen perfiles NACA 0012 de distintos tamaños sometidos a diversas velocidades y ángulos de ataque. Las variables disponibles se detallan en la \autoref{tbl:airfoil_variables}.
+El primer conjunto de datos proviene de la NASA y describe pruebas aerodinámicas y acústicas realizadas en un túnel de viento sobre diferentes secciones de palas \cite{airfoil_self-noise_291}. El objetivo es predecir la presión sonora (\textit{scaled-sound-pressure}) a partir de características físicas y operativas. La muestra consta de 1503 observaciones completas (sin valores faltantes) que incluyen perfiles NACA 0012 de distintos tamaños sometidos a diversas velocidades y ángulos de ataque. Las variables disponibles se detallan en la \autoref{tbl:airfoil_variables}.
 
 \begin{table}[ht!]
     \centering
@@ -18,12 +18,12 @@ El primer conjunto de datos proviene de la NASA y describe pruebas aerodinámica
     \hline
     \textbf{Variable} & \textbf{Significado} \\
     \hline
-    \textit{frequency} & Frecuencia en hertzios \\
+    \textit{frequency} & Frecuencia\\
     \textit{attack-angle} & Ángulo de ataque en grados \\
     \textit{chord-length} & Longitud de cuerda en metros \\
     \textit{free-stream-velocity} & Velocidad de flujo libre en metros por segundo \\
     \textit{suction-side-displacement-thickness} & Espesor de desplazamiento del lado de succión en metros \\
-    \textit{scaled-sound-pressure} & Presión sonora escalada en decibelios (var dep) \\
+    \textit{scaled-sound-pressure} & Presión sonora en decibelios (var dep) \\
     \hline
     \end{tabular}
 \end{table}
@@ -55,7 +55,7 @@ Tras el entrenamiento, los resultados en el conjunto de prueba (\autoref{tbl:air
     \end{tabular}
 \end{table}
 
-Para comprender qué factores impulsan las predicciones del modelo de \textit{Gradient Boosting}, se recurre a la importancia de variables por permutación (PFI). La \autoref{fig:airfoil-permutation-importance} señala a la frecuencia y el espesor de desplazamiento como los predictores dominantes, seguidos por la longitud de cuerda y la velocidad de flujo libre. Es relevante notar que los cinco modelos con mejor desempeño coincidieron en este orden de importancia, otorgando robustez a esta conclusión (\autoref{tbl:imp_airfoil_self_noise}).
+Para comprender qué factores influencian las predicciones del modelo de \textit{Gradient Boosting}, se recurre a la importancia de variables por permutación (PFI). La \autoref{fig:airfoil-permutation-importance} señala a la frecuencia y el espesor de desplazamiento como los predictores dominantes, seguidos por la longitud de cuerda y la velocidad de flujo libre. Es relevante notar que los cinco modelos con mejor desempeño coincidieron en este orden de importancia, otorgando robustez a esta conclusión (\autoref{tbl:imp_airfoil_self_noise}).
 
 \begin{figure}[ht!]
     \centering
@@ -64,7 +64,7 @@ Para comprender qué factores impulsan las predicciones del modelo de \textit{Gr
     \label{fig:airfoil-permutation-importance}
 \end{figure}
 
-Profundizando en la relación entre las variables más importantes y la presión sonora, los gráficos de dependencia parcial (\autoref{fig:airfoil-partial-dependence}) ofrecen una visión detallada. En el caso de la frecuencia, se observa una relación inversa clara: los niveles de presión sonora son máximos (130--140 dB) en el rango de bajas frecuencias (0--2500 Hz) y descienden progresivamente hasta los 100--110 dB cerca de los 20000 Hz. El análisis centrado corrobora este efecto, mostrando variaciones de hasta $\pm 20$ dB respecto a la media. No obstante, la escasez de observaciones por encima de los 7500 Hz sugiere interpretar con cautela las predicciones en ese extremo del espectro.
+Para profundizar en la relación entre las variables más importantes y la presión sonora, se utilizan los gráficos de dependencia parcial (\autoref{fig:airfoil-partial-dependence}). En el caso de la frecuencia, se observa una relación inversa clara: los niveles de presión sonora son máximos (130--140 dB) en el rango de bajas frecuencias (0--2500 Hz) y descienden progresivamente hasta los 100--110 dB cerca de los 20000 Hz. El análisis centrado corrobora este efecto, mostrando variaciones de hasta $\pm 20$ dB respecto a la media. No obstante, la escasez de observaciones por encima de los 7500 Hz sugiere interpretar con cautela las predicciones en ese extremo del espectro.
 
 Por su parte, el espesor de desplazamiento muestra un comportamiento no lineal más complejo. Aunque la presión sonora fluctúa principalmente entre 120 y 130 dB, la curva de respuesta presenta múltiples discontinuidades y una leve tendencia descendente general. Al igual que con la frecuencia, la distribución de los datos es asimétrica, concentrándose la gran mayoría de las observaciones por debajo de 0.015 metros.
 
@@ -88,20 +88,20 @@ El segundo caso de estudio utiliza el conjunto de datos \textit{Concrete Compres
     \hline
     \textbf{Variable} & \textbf{Significado} \\
     \hline
-    Cemento & Cantidad de cemento en la mezcla (kg/m³) \\
-    Escoria de alto horno & Cantidad de escoria de alto horno (kg/m³) \\
-    Cenizas volantes & Cantidad de cenizas volantes (kg/m³) \\
-    Agua & Cantidad de agua en la mezcla (kg/m³) \\
-    Superplastificante & Cantidad de superplastificante (kg/m³) \\
-    Agregado grueso & Cantidad de agregado grueso (kg/m³) \\
-    Agregado fino & Cantidad de agregado fino (kg/m³) \\
-    Edad & Edad del concreto en días \\
-    Resistencia & Resistencia a la compresión del concreto (var dep) \\
+    \textit{Cement} & Cantidad de cemento en la mezcla (kg/m³) \\
+    \textit{Blast Furnace Slag } & Cantidad de escoria de alto horno (kg/m³) \\
+    \textit{Fly Ash} & Cantidad de cenizas volantes (kg/m³) \\
+    \textit{Water} & Cantidad de agua en la mezcla (kg/m³) \\
+    \textit{Superplasticizer} & Cantidad de superplastificante (kg/m³) \\
+    \textit{Coarse Aggregate} & Cantidad de agregado grueso (kg/m³) \\
+    \textit{Fine Aggregate} & Cantidad de agregado fino (kg/m³) \\
+    \textit{Age} & Edad del concreto en días \\
+    \textit{Concrete Comprehensive Strength} & Resistencia a la compresión del concreto (var dep) \\
     \hline
     \end{tabular}
 \end{table}
 
-A diferencia del caso anterior, el análisis de correlación (\autoref{fig:concrete_correlation}) no mostró coeficientes superiores a 0.8 en valor absoluto, por lo que se decidió conservar todas las variables predictoras para el modelado.
+A diferencia del caso anterior, el análisis de correlación (\autoref{fig:concrete_correlation}) no mostró coeficientes superiores a 0.8 en valor absoluto, por lo que se decidió conservar todas las variables para el modelado.
 
 \begin{figure}[ht!]
     \centering
@@ -110,7 +110,7 @@ A diferencia del caso anterior, el análisis de correlación (\autoref{fig:concr
     \label{fig:concrete_correlation}
 \end{figure}
 
-Al evaluar el rendimiento predictivo en el conjunto de prueba (\autoref{tbl:concrete_predictions}), \textit{Gradient Boosting} emerge nuevamente como el modelo más preciso, consolidando la tendencia observada previamente sobre la eficacia de los métodos de ensamble en estos contextos.
+Al evaluar el rendimiento predictivo en el conjunto de prueba (\autoref{tbl:concrete_predictions}), \textit{Gradient Boosting} emerge nuevamente como el modelo más con mejor desempeño, consolidando la tendencia observada previamente sobre la eficacia de los métodos de ensamble en estos contextos.
 
 \begin{table}[ht!]
     \centering
@@ -137,7 +137,7 @@ En cuanto a la interpretabilidad, el análisis de importancia de variables (\aut
     \label{fig:concrete_permutation_importance}
 \end{figure}
 
-Los gráficos de dependencia parcial (\autoref{fig:concrete_partial_dependence}) permiten examinar en detalle el efecto de estas variables clave. Para la Edad, se aprecia un crecimiento pronunciado de la resistencia durante los primeros 50 días, tras lo cual la curva se estabiliza, indicando ganancias marginales más modestas con el paso del tiempo. Por su parte, la relación con el Cemento presenta un comportamiento escalonado con incrementos notables en umbrales específicos (250, 300 y 350 kg/m³). Un hallazgo interesante de los gráficos ICE es el paralelismo de las curvas individuales, lo que sugiere que el efecto de estas variables es aditivo y relativamente independiente de las interacciones con otros componentes de la mezcla.
+Los gráficos de dependencia parcial (\autoref{fig:concrete_partial_dependence}) permiten examinar en detalle el efecto de estas variables clave. Para la Edad, se aprecia un crecimiento pronunciado de la resistencia durante los primeros 50 días, tras lo cual la curva se estabiliza, indicando ganancias marginales más modestas con el paso del tiempo. Por su parte, la relación con el Cemento presenta un comportamiento escalonado con incrementos notables en umbrales específicos (250, 300 y 350 kg/m³). Un hallazgo interesante de los gráficos ICE es que las curvas individuales son paralelas, lo que sugiere que el efecto de estas variables es aditivo y relativamente independiente de las interacciones con otros componentes de la mezcla.
 
 \begin{figure}[ht!]
     \centering
@@ -146,7 +146,7 @@ Los gráficos de dependencia parcial (\autoref{fig:concrete_partial_dependence})
     \label{fig:concrete_partial_dependence}
 \end{figure}
 
-En resumen, este análisis confirma que la maduración del concreto (edad) y su contenido de cemento son los determinantes críticos de su resistencia, siendo \textit{Gradient Boosting} el algoritmo más capaz de capturar estas relaciones no lineales.
+En resumen, este análisis confirma que la maduración del concreto (edad) y su contenido de cemento son los determinantes críticos de su resistencia, siendo \textit{Gradient Boosting} el algoritmo más capaz de capturar estas relaciones.
 
 \section{\textit{Wine Quality}}
 
@@ -176,7 +176,7 @@ Finalmente, se analiza el conjunto de datos \textit{Wine Quality} \cite{wine_109
     \end{tabular}
 \end{table}
 
-Antes del modelado, se detectó una alta colinealidad entre el dióxido de azufre total y el libre (\autoref{fig:wine_corr}), procediéndose a eliminar este último para simplificar el modelo sin perder información significativa.
+Antes del modelado, se detectó una alta colinealidad entre el dióxido de azufre total y el libre (\autoref{fig:wine_corr}), procediéndose a eliminar este último.
 
 \begin{figure}[ht!]
     \centering
@@ -212,7 +212,7 @@ La importancia de variables (\autoref{fig:wine_perm_importance}) destaca rotunda
     \label{fig:wine_perm_importance}
 \end{figure}
 
-El análisis de dependencia parcial (\autoref{fig:wine_partial_dependence}) arroja luz sobre la naturaleza de estas influencias. Para el alcohol, la relación con la calidad es positiva y no lineal, con un impacto mayor en el rango medio (11\%--13\%). Por el contrario, la acidez volátil penaliza la calidad de forma casi lineal: a medida que aumenta su concentración, la puntuación predicha disminuye consistentemente.
+El análisis de dependencia parcial (\autoref{fig:wine_partial_dependence}) muestra el efecto de estas variables. Para el alcohol, la relación con la calidad es positiva y no lineal, con un impacto mayor en el rango medio (11\%--13\%). Por el contrario, la acidez volátil penaliza la calidad de forma casi lineal: a medida que aumenta su concentración, la puntuación predicha disminuye.
 
 \begin{figure}[ht!]
     \centering

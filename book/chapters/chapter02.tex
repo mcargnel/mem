@@ -1,6 +1,6 @@
-En este capítulo se hará una revisión sobre árboles de regresión y clasificación (CART), basando la explicación en \cite{CART}.
+En este capítulo se hará una revisión sobre árboles de regresión y clasificación (CART), basando en \cite{CART}.
 
-Estos modelos entran dentro de la categoría de análisis supervisado no paramétrico, por lo que tienen una gran flexibilidad que les permite modelar naturalmente las interacciones entre variables. Otra de las ventajas de estos algoritmos es su interpretabilidad, dado que es muy sencillo entender el efecto de cada variable explicativa en la variable dependiente siguiendo la estructura del árbol.
+Estos modelos entran dentro de la categoría de análisis supervisado no paramétrico, por lo que tienen una gran flexibilidad que les permite modelar naturalmente las interacciones entre variables y no asumen linealidad. Otra de las ventajas de estos algoritmos es su interpretabilidad, dado que es muy sencillo entender el efecto de cada variable explicativa en la variable dependiente siguiendo la estructura del árbol.
 
 Con el objetivo de introducir el modelo estadístico en cuestión, en la \autoref{fig:arbol-decision} se muestra un árbol de decisión cuyo objetivo es predecir el número de anillos de un abulón, el cual es un indicador de su edad\footnote{Los datos provienen de \cite{abalone_1}}. El árbol se interpreta de arriba hacia abajo, lo que indica que el peso de la concha (\textit{Shell\_weight}) es la variable más relevante, ya que aparece en la primera división. Se observa que valores más altos de \textit{Shell\_weight} están asociados con un mayor número de anillos.
 
@@ -51,7 +51,7 @@ Sin embargo, calcular esta expresión es computacionalmente prohibitivo dado que
 que crece exponencialmente por lo que se hace computacionalmente muy intensiva.
 
 Es por ello que se utiliza el algoritmo conocido como división binaria recursiva, este algoritmo, que va de arriba hacia abajo en el árbol, se considera \textit{greedy} dado que en cada paso solo mira el valor óptimo en ese momento, por lo que hace menos cálculos aunque puede que no llegue a la solución óptima.
-En definitiva el algoritmo consiste en considerar todas las variables $X_1,X_2,...,X_p$ y todos los posibles valores en los cuales se podría particionar ($s$) para quedarnos con el que minimice el error cuadrático medio en ese paso. En definitiva buscamos
+En definitiva el algoritmo consiste en considerar todas las variables $X_1,X_2,...,X_p$ y todos los posibles valores en los cuales se podría particionar ($s$) para quedarnos con el que minimice el error cuadrático medio en ese paso. En definitiva se busca
 
 \begin{equation}
 MSE(T)=\frac{1}{n}\sum_{r=1}^{R}\sum_{i:x_i\in R_r(j,s)}(Y_i-\hat{Y}_{R_r})^2    
@@ -63,7 +63,7 @@ Este algoritmo ya no crece de manera exponencial como el anterior, por lo que es
 
 \subsection{Definir cuándo un nodo es terminal}
 
-Definir cuándo un nodo es terminal es equivalente a establecer una regla de parada en el algoritmo de partición recursiva. En teoría, se podría continuar dividiendo los nodos hasta que cada uno contenga una única observación, lo cual minimizaría el error en la muestra de entrenamiento a cero. No obstante, esto conduciría a un modelo sobreajustado con poca capacidad de predicción en nuevos datos.
+Definir cuándo un nodo es terminal es equivalente a establecer una regla de parada en el algoritmo de partición recursiva. En teoría, se podría continuar dividiendo los nodos hasta que cada uno contenga una única observación, lo cual minimizaría el error en la muestra de entrenamiento a cero. No obstante, esto conduciría a un modelo sobreajustado con poca capacidad de predicción en datos fuera de la muestra.
 
 Para evitar esto, se puede definir un nodo como terminal cuando se cumple alguna condición restrictiva. Las condiciones más habituales incluyen que el número de observaciones en el nodo sea menor a un mínimo preestablecido (por ejemplo, $n_{min} = 5$) o que la disminución del error cuadrático medio que se obtendría con la mejor partición posible no supere un cierto umbral. También se detiene el proceso si el nodo es puro, es decir, si todas las observaciones tienen el mismo valor de respuesta.
 
@@ -103,9 +103,7 @@ Por lo que los valores que tendrán los nodos terminales (predicciones) serán s
 
 \section{Poda de árboles}
 
-Construir un árbol con demasiadas particiones puede llevar a un sobre ajuste. Básicamente porque si pensamos en el árbol más grande que se puede construir con una muestra, el mismo tendría un nodo terminal por cada observación, lo cual llevaría a un error muy bajo en la muestra de entrenamiento, pero una capacidad de generalización muy mala.
-
-Para evitar esto, la técnica que se estudiará se basa en hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Esta última es una técnica que permite estimar el error de generalización dividiendo el conjunto de datos en $k$ grupos o \textit{folds}. El procedimiento consiste en entrenar el modelo utilizando $k-1$ grupos y evaluarlo en el grupo restante, repitiendo este proceso $k$ veces para que cada grupo funcione como conjunto de prueba una vez. El error de validación final es el promedio de los errores obtenidos en cada iteración, lo que permite seleccionar el parámetro de complejidad que minimiza dicho error.
+Para evitar el sobreajuste, la técnica que se estudiará se basa en hacer crecer un árbol muy grande y luego "podarlo" para obtener árboles más pequeños que podemos comparar con validación cruzada. Esta última es una técnica que permite estimar el error de generalización dividiendo el conjunto de datos en $k$ grupos o \textit{folds}. El procedimiento consiste en entrenar el modelo utilizando $k-1$ grupos y evaluarlo en el grupo restante, repitiendo este proceso $k$ veces para que cada grupo funcione como conjunto de prueba una vez. El error de validación final es el promedio de los errores obtenidos en cada iteración, lo que permite seleccionar el parámetro de complejidad que minimiza dicho error.
 
 Antes de describir el procedimiento es importante definir $T_0$ como un árbol maximal y considerar que $T'$ sea un subárbol podado de $T$. Para que un árbol sea considerado subárbol de otro tiene que tener $T' = T_0 - T_t$, donde $T_t$ es una rama (subárbol) que se elimina de $T_0$ para obtener $T'$.
 

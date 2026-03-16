@@ -1,6 +1,6 @@
 Tal como se mencionó anteriormente, uno de los \textit{trade-off} de los ensambles de árboles es que al agrupar múltiples árboles el modelo en conjunto deja de ser interpretable. Esto puede no suponer un problema si el objetivo es predecir, pero si el objetivo es interpretar el modelo el hecho de trabajar con 'cajas negras' puede ser un problema.
 
-Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. Pese a que existen distintas técnicas para interpretar modelos, algunas son específicas para ciertos tipos de modelos mientras que otras son agnósticas al modelo. En este trabajo se estudiará como acceder a la importancia de cada covariable y al efecto que tiene cada una de ellas sobre la variable dependiente.
+Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. En este trabajo se estudiarán métodos para calcular la importancia de cada covariable y el efecto que tiene cada una de ellas sobre la variable dependiente.
 
 \section{Importancia de las variables}
 
@@ -23,11 +23,11 @@ Cuando se trabaja con ensambles de árboles, la importancia se generaliza promed
 \hat{\mathbf{I}}_j^{2}=\frac{1}{B}\sum_{m=1}^{B}\hat{I}^{2}_j(T_b)    
 \end{equation}
 
-Esta medida presenta limitaciones importantes. Primero, está basada en heurísticas sin fundamentos estadísticos sólidos. \cite{strobl_2008} critica que otorga demasiada influencia a variables correlacionadas. Segundo, favorece a variables categóricas con muchas categorías, dado que estas son propensas a generar más divisiones sin que esto implique una mayor contribución a la reducción del error.
-`'
+Esta medida presenta limitaciones importantes: está basada en heurísticas sin fundamentos estadísticos sólidos, \cite{strobl_2008} critica que otorga demasiada influencia a variables correlacionadas y favorece a variables categóricas con muchas categorías, dado que estas son propensas a generar más divisiones sin que esto implique una mayor contribución a la reducción del error.
+
 \subsection{\textit{Permutation Feature Importance}} 
 
-Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se destruye la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables más importantes serán aquellas cuya permutación genere mayor incremento en el error.
+Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se elimina la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables más importantes serán aquellas cuya permutación genere mayor incremento en el error.
 
 En el contexto de \textit{Random Forest}, habiendo entrenado un modelo $\hat{f}$, para cada covariable $j \in \{1,2,...,p\}$ se construye un nuevo conjunto de datos permutando las observaciones de dicha variable mientras se mantienen las demás fijas. Luego se calcula el error \textit{out-of-bag}:
 
@@ -124,7 +124,7 @@ Sin embargo, cuando se calculan las importancias mediante PFI para estos modelos
     \label{fig:heatmap-importances}
 \end{figure}
 
-Este fenómeno se conoce como el \textit{Rashomon Effect} \cite{breiman_2001}, término inspirado en la película de Kurosawa donde un mismo evento es narrado desde perspectivas contradictorias. \cite{fischer_2019} formalizan este concepto definiendo el ``conjunto de Rashomon'' como la colección de modelos con rendimiento predictivo similar pero estructuras internas diferentes. La existencia de múltiples explicaciones igualmente válidas representa un desafío fundamental: la importancia de una variable no es una propiedad intrínseca de los datos, sino que depende del modelo específico elegido.
+Este fenómeno se conoce como el \textit{Rashomon Effect} \cite{breiman_2001}, término inspirado en la película de Kurosawa donde un mismo evento es narrado desde perspectivas contradictorias. \cite{fischer_2019} formalizan este concepto definiendo el ¨conjunto de Rashomon¨ como la colección de modelos con rendimiento predictivo similar pero estructuras internas diferentes. La existencia de múltiples explicaciones igualmente válidas representa un desafío fundamental: la importancia de una variable no es una propiedad intrínseca de los datos, sino que depende del modelo específico elegido.
 
 \subsection{\textit{Model Class Reliance}: una solución al \textit{Rashomon Effect}} 
 
@@ -145,14 +145,14 @@ Luego, el intervalo MCR se define como:
 \end{equation}
 
 \subsubsection{Interpretación}
-El intervalo MCR proporciona información sobre la consistencia de la importancia de una variable. Si $MCR^{-}(\epsilon) > 1$, todos los modelos dentro del conjunto de Rashomon dependen de la variable, indicando que es consistentemente importante. Si $MCR^{+}(\epsilon) \approx 1$, ningún modelo depende fuertemente de ella.
+El intervalo MCR proporciona información sobre la consistencia de la importancia de una variable. Si $MCR^{-}(\epsilon) > 1$, todos los modelos dentro del conjunto de Rashomon dependen de la variable, indicando que importante. Si $MCR^{+}(\epsilon) \approx 1$, ningún modelo depende fuertemente de ella.
 
 La amplitud del intervalo también es informativa: un intervalo estrecho indica que la importancia es estable independientemente del modelo elegido, mientras que un intervalo amplio señala que la importancia depende fuertemente de la arquitectura particular. Por ejemplo, si para una variable $j$ se tiene $MCR^{-}(\epsilon) \approx 1$ pero $MCR^{+}(\epsilon) >> 1$, existen modelos con buena capacidad predictiva que no dependen de dicha variable, por lo que su importancia es cuestionable.
 
 \subsubsection{Estimación}
 En la práctica, MCR se estima mediante un estimador \textit{plug-in}: se calcula $\hat{MR}(f)$ para todos los modelos que integren el conjunto de Rashomon empírico $\hat{R}(\epsilon)$, y se reportan los valores mínimo y máximo como límites del intervalo.
 
-\section{Efecto de las variables} 
+\section{Efecto de las variables}
 
 Mientras que las técnicas de importancia de variables permiten identificar qué covariables son relevantes para el modelo, no proporcionan información sobre la forma de la relación entre cada variable y la respuesta. Para ello se desarrollaron técnicas de visualización que permiten aislar y representar el efecto de una o más covariables sobre la predicción del modelo.
 
@@ -177,9 +177,9 @@ En la práctica, la distribución $p(X_C)$ es desconocida y se aproxima mediante
 \bar{f}(X_S)\approx\frac{1}{n}\sum_{i=1}^{n}\hat{f}(X_S,x_{C}^{i})
 \end{equation}
 
-El algoritmo para calcular el PDP procede de la siguiente manera: para cada valor de interés $x_S$ de la variable a analizar, se construyen $n$ observaciones artificiales combinando $x_S$ con los valores observados $x_C^{(i)}$ de las demás variables para cada observación $i$ en la muestra. El modelo genera predicciones $\hat{f}(x_S, x_C^{(i)})$ para cada una de estas combinaciones, y el valor del PDP en $x_S$ es el promedio de estas $n$ predicciones. Este procedimiento se repite para una grilla de valores de $x_S$, generando la curva de dependencia parcial.
+El algoritmo para calcular el PDP procede de la siguiente manera: para cada valor de interés $x_S$ de la variable a analizar, se construyen $n$ observaciones combinando $x_S$ con los valores observados $x_C^{(i)}$ de las demás variables para cada observación $i$ en la muestra. El modelo genera predicciones $\hat{f}(x_S, x_C^{(i)})$ para cada una de estas combinaciones, y el valor del PDP en $x_S$ es el promedio de estas $n$ predicciones. Este procedimiento se repite para una grilla de valores de $x_S$, generando la curva de dependencia parcial.
 
-Esta metodología tiene limitaciones importantes. El supuesto implícito es que las variables $X_S$ son independientes de $X_C$, lo cual raramente se cumple en la práctica. Cuando existen relaciones entre variables, el PDP puede generar predicciones para combinaciones de valores que no existen en los datos reales. Por ejemplo, si se analiza el efecto de la altura sobre el peso predicho, el PDP evaluará combinaciones donde una persona mide 2 metros pero pesa 50 kg, una combinación improbable que puede distorsionar la interpretación.
+Esta metodología tiene limitaciones importantes. Por ejemplo, el supuesto implícito es que las variables $X_S$ son independientes de $X_C$, lo cual raramente se cumple en la práctica. Además, Cuando existen relaciones entre variables, el PDP puede generar predicciones para combinaciones de valores que no existen en los datos reales. Por ejemplo, si se analiza el efecto de la altura sobre el peso predicho, el PDP evaluará combinaciones donde una persona mide 2 metros pero pesa 50 kg, una combinación improbable que puede distorsionar la interpretación.
 
 Para ilustrar los PDP se utilizó el mismo modelo de \textit{Gradient Boosting Machine} entrenado anteriormente sobre el conjunto de datos \textit{Abalone}. La \autoref{fig:partial-dependence-plot} muestra el efecto del peso total sobre la edad predicha. Se observa una relación positiva: a mayor peso, mayor edad predicha, aunque la relación se aplana para pesos elevados.
 
@@ -197,7 +197,7 @@ Los PDP muestran el efecto promedio de una variable, pero este promedio puede oc
 Formalmente, para cada observación $i$ se define:
 
 \begin{equation}
-\hat{f}_i(x_S)=\hat{f}(x_S, x_{C}^{(i)})    
+\hat{f}_i(x_S)=\hat{f}(x_S, x_{C}^{(i)})
 \end{equation}
 
 Es decir, en lugar de promediar sobre todas las observaciones, se mantienen fijos los valores $x_C^{(i)}$ de cada observación y se varía únicamente $x_S$. El resultado es una curva para cada observación en la muestra, lo que permite visualizar cómo varía el efecto de $X_S$ dependiendo de los valores de las otras variables.
@@ -229,7 +229,7 @@ Formalmente, se elige un valor de referencia $x^*$ (típicamente el mínimo o m�
 \hat{f}_{cent}^{(i)}(x_S) = \hat{f}(x_S, x_{C}^{(i)}) - \hat{f}(x^*, x_{C}^{(i)})
 \end{equation}
 
-De esta manera, todas las curvas pasan por el origen en $x^*$. Si se elige el valor mínimo como referencia, las curvas muestran el efecto acumulado de incrementar $X_S$ desde su valor mínimo. Esta representación facilita la identificación de interacciones: si las curvas centradas son paralelas, el efecto de $X_S$ es homogéneo; si divergen, existen interacciones con otras variables.
+De esta manera, todas las curvas pasan por el origen en $x^*$. Si se elige el valor mínimo como referencia, las curvas muestran el efecto acumulado de incrementar $X_S$ desde su valor mínimo. Esta representación facilita la identificación de interacciones.
 
 La \autoref{fig:centered-ice-plot} presenta el gráfico ICE centrado para el peso total, utilizando el valor mínimo como referencia. Se pueden observar diferencias en las pendientes de las curvas, lo que confirma la presencia de heterogeneidad en el efecto. La línea roja representa el PDP centrado, que resume el efecto promedio.
 
@@ -254,7 +254,7 @@ En este caso, la derivada de $\hat{f}$ con respecto a $X_S$ depende únicamente 
 
 Las técnicas de interpretación presentadas en las secciones anteriores permiten comprender cómo un modelo utiliza las variables para generar predicciones. Sin embargo, surgen naturalmente dos preguntas adicionales: ¿pueden estas técnicas informar sobre relaciones causales? y ¿qué relación tienen con el verdadero proceso generador de los datos? Esta sección aborda ambas cuestiones, explorando las condiciones bajo las cuales las técnicas de interpretación admiten una lectura causal y cómo se relacionan formalmente con las propiedades poblacionales.
 
-\subsection{Interpretación causal de PDP e ICE}
+\subsection{Interpretación causal}
 
 Los modelos de aprendizaje automático convencionales se basan en asociaciones estadísticas y no contemplan intervenciones ni escenarios contrafactuales \cite{pearl_2018}. No obstante, resulta de interés analizar bajo qué condiciones las técnicas de interpretación pueden admitir una lectura causal. Este es el eje central del trabajo de \cite{Zhao_2021}, donde se demuestra que los PDP poseen una interpretación causal bajo supuestos específicos.
 
@@ -294,16 +294,13 @@ Cuando las condiciones del criterio \textit{backdoor} no se satisfacen, o cuando
 
 El \textit{Double Machine Learning} (DML) propuesto por \cite{Chernozhukov_2018} utiliza modelos de aprendizaje automático para estimar los \textit{nuisance parameters}: las relaciones entre el tratamiento y los \textit{confounders}, y entre el resultado y los \textit{confounders}. Mediante el uso de \textit{cross-fitting} (entrenamiento y predicción en muestras separadas), DML permite obtener estimadores del efecto causal con propiedades estadísticas deseables, incluyendo normalidad asintótica y validez de intervalos de confianza, incluso cuando se utilizan modelos complejos como ensambles de árboles o redes neuronales.
 
-% TODO: escribir mejor
-Los \textit{Causal Forests} de \cite{Wager_2018} extienden los \textit{Random Forests} para la estimación de efectos de tratamiento heterogéneos (CATE, por sus siglas en inglés). A diferencia de los \textit{Random Forest} tradicionales que optimizan la predicción del resultado observado, los \textit{Causal Forests} adaptan la función de división para maximizar la heterogeneidad de los efectos del tratamiento entre las particiones. Esto permite identificar subgrupos de la población con respuestas diferenciales a una intervención, capturando la estructura local de la heterogeneidad causal.
+Los \textit{Causal Forests} propuestos por \cite{Wager_2018} extienden la lógica de los \textit{Random Forests} tradicionales hacia la estimación de efectos de tratamiento heterogéneos (CATE). Su principal innovación reside en adaptar el criterio de división de los árboles: en lugar de optimizar el poder predictivo, las particiones se diseñan para maximizar la diferencia de los efectos del tratamiento entre los nodos. Este enfoque permite identificar subgrupos poblacionales con respuestas diferentes frente a una intervención, revelando así relaciones causales.
 
-Estos métodos representan un cambio de paradigma respecto a las técnicas de interpretación clásicas: en lugar de interpretar un modelo predictivo, construyen modelos específicamente diseñados para estimar efectos causales. Por esta razón, su estudio en profundidad excede el alcance de este trabajo.
+Estos métodos representan un cambio de paradigma respecto a las técnicas de interpretación clásicas: en lugar de interpretar un modelo predictivo, construyen modelos específicamente diseñados para estimar efectos causales. Su estudio en profundidad excede el alcance de este trabajo.
 
 \subsection{Relación con el proceso generador de datos} 
 
-Una diferencia fundamental entre los modelos estadísticos tradicionales y los modelos de aprendizaje automático es la interpretabilidad de los parámetros. En un modelo de regresión lineal, los coeficientes tienen una interpretación directa en términos del proceso generador de datos (DGP): representan el cambio esperado en $Y$ ante un cambio unitario en la variable correspondiente, manteniendo las demás constantes. Esta conexión permite realizar inferencia sobre propiedades poblacionales.
-
-Los modelos de aprendizaje automático, en cambio, priorizan la capacidad predictiva sobre la interpretabilidad paramétrica. Las técnicas presentadas en este capítulo (PDP, PFI, ICE) fueron diseñadas para extraer información de estos modelos, pero surge la pregunta: ¿qué relación tienen estas medidas con las verdaderas propiedades del DGP?
+Una diferencia fundamental entre los modelos estadísticos tradicionales y los modelos de aprendizaje automático es la interpretabilidad de los parámetros. En un modelo de regresión lineal, los coeficientes tienen una interpretación directa en términos del proceso generador de datos (DGP) que permite realizar inferencia sobre propiedades poblacionales. Por otra parte, las técnicas presentadas en este capítulo (PFI, PDP, ICE) fueron diseñadas para extraer información de modelos de aprendizaje automático, pero no necesariamente existe relación con las verdaderas propiedades del DGP.
 
 \cite{freiesleben_2024} proponen un marco estadístico que formaliza esta conexión, introduciendo los conceptos de DGP-PD y DGP-PFI. Estas medidas representan los análogos poblacionales de las técnicas de interpretación, definidos en términos de la verdadera esperanza condicional $f(x)=E[Y|X=x]$:
 

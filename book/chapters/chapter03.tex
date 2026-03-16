@@ -1,4 +1,4 @@
-Como se mencionó anteriormente, dos de los problemas principales de los árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que en este capítulo se estudian dos métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}. Estas técnicas mejoran la capacidad predictiva y reducen la variabilidad al agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
+Como se mencionó anteriormente, dos de los problemas principales de los árboles de decisión son la baja capacidad predictiva y la inestabilidad. Por lo que en este capítulo se estudian métodos para evitar estos problemas, en particular \textit{boosting} y \textit{bagging} con dos implementaciones clásicas como \textit{Random Forest} y \textit{Gradient Boosting Machines}. Estas técnicas mejoran la capacidad predictiva y reducen la variabilidad al agrupar múltiples modelos con el objetivo de tener un único modelo con mejor capacidad predictiva.
 
 \section{\textit{Bagging}}
 
@@ -10,9 +10,8 @@ La idea de \textit{Bagging} \cite{Breiman1996} es calcular $\hat{f}^1(x),\hat{f}
     \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
 \end{equation}
 
-La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán muy poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo.
+La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán muy poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo. Como se ve más formalmente a continuación
 
-\textit{Bagging} reduce la varianza sin aumentar el sesgo.
 Partiendo de las predicciones
 \begin{equation}
     \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
@@ -52,7 +51,7 @@ volviendo a la varianza total:
 
 Por lo tanto, cuando $B \to \infty$, el término $\frac{1}{B} \to 0$ y la varianza se aproxima a $\rho\sigma^2$. Esto implica que la reducción de la varianza depende tanto de $B$ como de $\rho$. Dado que la correlación entre árboles $\rho$ es menor a 1, la varianza final ($\rho\sigma^2$) resultará menor que la varianza original ($\sigma^2$), demostrando la efectividad del método. 
 
-\textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace una muestra \textit{bootstrap} solamente se toma en cuenta aproximadamente el 63\% de los datos. Para demostrarlo, partimos de la probabilidad de No ser seleccionado en una muestra:
+\textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace una muestra \textit{bootstrap} solamente se toma en cuenta aproximadamente el 63\% de los datos. Para demostrarlo, partimos de la probabilidad de no ser seleccionado en una muestra:
 
 \begin{equation}
 P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}    
@@ -99,7 +98,7 @@ Donde $( T(x; \Theta_b) )$ representa el valor predicho por el b-ésimo árbol d
 Es interesante notar que, si tomamos si $B\rightarrow\infty$, es decir cuando se promedian muchos árboles, por Ley de los Grandes Números se puede probar que:
 
 \begin{equation}
-\lim_{B\rightarrow\infty}\hat{f}_{\text{rf}}(x)=\mathit{E}[T(x;\Theta_b)]    
+\lim_{B\rightarrow\infty}\hat{f}_{\text{rf}}(x)=\mathit{E}[T(x;\Theta_b)]
 \end{equation}
 
 Esto significa que, con suficientes árboles, la predicción de \textit{Random Forest} se aproxima al valor esperado de un único árbol. La demostración formal y los detalles pueden verse en \cite{breiman2001a}. Sin embargo, de manera intuitiva puede verse en la \autoref{fig:rf-predictions-convergence} cómo a medida que aumenta la cantidad de árboles la variabilidad de las predicciones disminuye.
@@ -118,7 +117,7 @@ A diferencia de \textit{Bagging}, \textit{Boosting} no promedia predicciones, si
 Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\hat{f}(x)$ a partir de un conjunto de datos $(X,Y)$. En este caso, el conjunto de datos es una muestra i.i.d. de $(X,Y)$ de tamaño $n$:
 
 \begin{equation}
-(X,Y)=\{(x_1,y_1),(x_2,y_2),...,(x_n,y_n)\}    
+(X,Y)=\{(x_1,y_1),(x_2,y_2),...,(x_n,y_n)\}
 \end{equation}
 
 Donde $x_i$ es un vector de covariables y $y_i$ es la variable de respuesta, en este caso, continua. Por lo que se trata de un problema de regresión.
@@ -140,7 +139,7 @@ En definitiva, se ve que la forma de aproximar la función $f(x)$ es a través d
 El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
 
 \begin{enumerate}
-    \item Inicializar $\hat{f}_0(x)$ con una constante.
+    \item Iniciar $\hat{f}_0(x)$ con una constante.
     \item Para cada iteración $b=1,2,...,B$:
     \begin{itemize}
         \item Calcular el gradiente de la función de pérdida y utilizar su valor negativo.
@@ -158,7 +157,7 @@ El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos
 \end{enumerate}
 
 \subsection{Funciones de pérdida} 
-Dependiendo del problema y los datos con los que se esté trabajando, se pueden utilizar distintas funciones de pérdida. A continuación se presentan algunas de las más comunes para problemas de regresión, es decir, cuando la variable de respuesta $y$ es continua.
+Dependiendo del problema y los datos con los que se esté trabajando, se pueden utilizar distintas funciones de pérdida. A continuación se presentan algunas de las más comunes para problemas de regresión.
 
 \subsubsection{Error Cuadrático Medio (MSE)}
 
@@ -182,7 +181,7 @@ Luego, como el gradiente indica la dirección de máximo crecimiento, el negativ
 - g_b(x)=y-f(x)
 \end{equation}
 
-Lo cual es simplemente el residuo cuando se realiza la estimación.
+es decir, el residuo.
 
 \subsubsection{Alternativas robustas}
 
@@ -201,7 +200,6 @@ L(y,f(x))=\begin{cases}
 
 A continuación, en la \autoref{fig:loss-functions},  se presentan las funciones de pérdida anteriores. Puede verse que MSE aumenta mucho cuando hay errores grandes, mientras que MAE y Huber son más robustas a los \textit{outliers}. Además, Huber se comporta similar a MSE cuando el error es pequeño, pero al aumentar el error, comienza a penalizar menos.
 
-
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1\textwidth]{images/capitulo_3/loss_functions_comparison.pdf}
@@ -210,9 +208,7 @@ A continuación, en la \autoref{fig:loss-functions},  se presentan las funciones
 \end{figure}
 
 \subsection{Modelos base}
-Si bien el algoritmo de \textit{Boosting} puede utilizar múltiples modelos base, en este trabajo se expondrán únicamente los modelos base de árboles de decisión.
-
-Como se mencionó anteriormente, una de las ventajas de los árboles de decisión es poder capturar interacciones entre las covariables. Esta característica puede ser regulada mediante un hiperparámetro que indica la profundidad máxima de los árboles. En particular, la literatura sugiere utilizar árboles de poca profundidad en este tipo de modelos. Siendo los \textit{stumps} los árboles de profundidad 1 los más utilizados.
+Si bien el algoritmo de \textit{Boosting} puede utilizar múltiples modelos base, en este trabajo se expondrán únicamente los modelos base de árboles de decisión. En particular, la literatura sugiere utilizar árboles de poca profundidad en este tipo de modelos. Siendo los \textit{stumps} los árboles de profundidad 1 los más utilizados.
 
 En la \autoref{fig:gbm-depth-effect} se puede ver el efecto de la profundidad de los árboles en el error del modelo donde queda claro como arboles con poca profundidad tienen errores más bajos que los árboles de profundidad mayor.
 
@@ -232,16 +228,16 @@ La idea intuitiva detrás del \textit{subsampling} es introducir variabilidad en
 Pese a que esta técnica puede ayudar a en casos donde los \textit{datasets} sean muy grandes y el costo computacional sea alto, al solo considerar una parte de las observaciones el entrenamiento puede ser menos preciso por lo que se debe balancear.
 
 \subsubsection{\textit{Shrinkage}}
-\textit{Shrinkage} se utiliza para reducir el efecto de los árboles individuales en el modelo. Intuitivamente, es un hiperparámetro que permite regular cuánto se toman en cuenta los errores de los árboles anteriores y se basa en que es preferible mejorar poco a poco las predicciones.
+\textit{Shrinkage} se utiliza para reducir el efecto de los árboles individuales en el modelo. Intuitivamente, es un hiperparámetro que permite regular cuánto se toman en cuenta los errores de los árboles anteriores para mejorar poco a poco las predicciones.
 
 En definitiva, el shrinkage puede incluirse $\hat{f}_b(x)$ como:
 \begin{equation}
 \hat{f}_b(x)=\hat{f}_{b-1}(x)+\lambda\gamma_b h_b(x,\theta_b)    
 \end{equation}
 
-Donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$ para que el modelo converja al mismo error.
+Donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$ para que el modelo llegue al mismo error.
 
-En la \autoref{fig:gbm-shrinkage-effect} se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de test. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
+En la \autoref{fig:gbm-shrinkage-effect} se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de testeo. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
 
 \begin{figure}[ht!]
     \centering
