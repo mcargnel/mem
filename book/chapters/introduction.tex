@@ -51,11 +51,3 @@ Cabe destacar que si bien estos modelos pueden utilizarse tanto para clasificaci
 \section{Estructura del trabajo}
 
 El trabajo se estructura de la siguiente manera: en el Capítulo 2 se hace una revisión de la teoría detrás de los árboles de regresión, mencionando el algoritmo que se usa para podarlos, cómo se comportan cuando las variables están correlacionadas y ante la presencia de \textit{outliers}. Se finaliza con algunas de las limitaciones que llevaron al desarrollo de técnicas más avanzadas. En el Capítulo 3 se estudian los ensambles de árboles y cómo estos alivian algunas de las limitaciones de los árboles individuales. En particular se profundiza sobre las técnicas \textit{Bagging} y \textit{Boosting}. Luego, en el Capítulo 4, se revisan tres técnicas que permiten interpretar los ensambles de árboles descritos anteriormente. Finalmente, se presentan  3 aplicaciones de todo lo descrito anteriormente en el Capítulo 5, seguido por las conclusiones en el Capítulo 6.
-
-\section{Notación}
-
-Se establece la notación matemática que se utilizará de manera consistente a lo largo del documento.
-
-Sea $P_{XY}$ la distribución conjunta inducida por el proceso generador de datos, donde $X$ es una variable aleatoria $p$-dimensional e $Y$ es una variable aleatoria unidimensional. El conjunto de datos se denota como $D_n = \{(x(1), y(1)), \dots, (x(n), y(n))\}$, donde $x(i) \in \mathbb{R}^p$ e $y(i) \in \mathbb{R}$ para $i \in \{1, \dots, n\}$.
-
-El mapeo verdadero entre características y variable objetivo se denota como $f(X) = E[Y|X = x]$. Para cualquier modelo, denotamos $f: X \rightarrow Y$ como el modelo teórico y $\hat{f}: X \rightarrow Y$ como el modelo ajustado sobre $D_n$, el cual se obtiene minimizando una función de pérdida $L: Y\times \mathbb{R}^p \rightarrow \mathbb{R}_+^0$. A lo largo del trabajo se estudiarán distintos tipos de modelos, denotados como $f^{tree}$ para árboles de regresión, $f^{rf}$ para \textit{Random Forest} y $f^{gb}$ para \textit{Gradient Boosting}.
