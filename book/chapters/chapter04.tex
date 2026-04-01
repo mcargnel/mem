@@ -1,4 +1,4 @@
-Tal como se mencionó anteriormente, uno de los \textit{trade-off} de los ensambles de árboles es que al agrupar múltiples árboles el modelo en conjunto deja de ser interpretable. Esto puede no suponer un problema si el objetivo es predecir, pero si el objetivo es interpretar el modelo el hecho de trabajar con 'cajas negras' puede ser un problema.
+Tal como se mencionó anteriormente, uno de los inconvenientes de los ensambles de árboles es que al agrupar múltiples árboles el modelo en conjunto deja de ser interpretable. Esto puede no suponer un problema si el objetivo es predecir, pero si el objetivo es interpretar el modelo el hecho de trabajar con 'cajas negras' puede ser un problema.
 
 Es por ello que se desarrollaron técnicas para extraer información de modelos de aprendizaje automático. Estas técnicas se aplican una vez entrenado el modelo y permiten entender cómo el mismo utiliza las variables. En este trabajo se estudiarán métodos para calcular la importancia de cada covariable y el efecto que tiene cada una de ellas sobre la variable dependiente.
 
@@ -7,7 +7,7 @@ Es por ello que se desarrollaron técnicas para extraer información de modelos 
 Con el acceso a información que se tiene actualmente, no es extraño querer incluir múltiples covariables en un mismo modelo. Sin embargo, entender cuáles de ellas realmente aportan al mismo no es trivial, por lo que se desarrollaron múltiples técnicas para evaluarlo. Esta sección presenta dos enfoques fundamentales: \textit{Split Gain Feature Importance} y \textit{Permutation Feature Importance}. Posteriormente, se analiza una limitación importante de estas técnicas (la inestabilidad de las importancias entre modelos con rendimiento similar) y se presenta \textit{Model Class Reliance} como una solución a este problema.
 
 \subsection{\textit{Split Gain Feature Importance}}
-
+%#TODO: cambiar b por n - Listo
 Esta técnica fue propuesta por \cite{friedman_2001} y asigna importancias en base a la reducción del error que cada variable genera al ser utilizada como criterio de división. Esta metodología es específica para árboles de decisión y se define formalmente para un solo árbol como:
  
 \begin{equation}
@@ -20,20 +20,24 @@ donde $\hat{I}_j^{2}(T)$ representa la importancia de la variable $j$ en el árb
 Cuando se trabaja con ensambles de árboles, la importancia se generaliza promediando sobre todos los árboles del ensamble:
 
 \begin{equation}
-\hat{\mathbf{I}}_j^{2}=\frac{1}{B}\sum_{m=1}^{B}\hat{I}^{2}_j(T_b)    
+\hat{\mathbf{I}}_j^{2}=\frac{1}{B}\sum_{m=1}^{B}\hat{I}^{2}_j(T_n)    
 \end{equation}
 
 Esta medida presenta limitaciones importantes: está basada en heurísticas sin fundamentos estadísticos sólidos, \cite{strobl_2008} critica que otorga demasiada influencia a variables correlacionadas y favorece a variables categóricas con muchas categorías, dado que estas son propensas a generar más divisiones sin que esto implique una mayor contribución a la reducción del error.
 
 \subsection{\textit{Permutation Feature Importance}} 
+%#TODO: aclarar si se suma y cuantas permutaciones hay -> Listo!
+Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se elimina la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables menos importantes serán aquellas cuya permutación no genere un gran mayor incremento en el error dado que si el modelo no utilizó la variable durante el entrenamiento, el hecho de permutar las observaciones de dicha variable no debería afectar el error. Por otro lado, se espera que para variables poco importantes los errores se mantengan similares con y sin la permutación.
 
-Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se elimina la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables más importantes serán aquellas cuya permutación genere mayor incremento en el error.
+Este proceso se repite K veces para cada variable con el fin de reducir la varianza introducida por la aleatoriedad de la permutación. El valor final de importancia se obtiene promediando los resultados de estas iteraciones. El número de repeticiones K suele definirse buscando un equilibrio entre la estabilidad de la métrica y el costo computacional, el cual depende directamente del tamaño del conjunto de datos y la velocidad de inferencia del modelo.
 
 En el contexto de \textit{Random Forest}, habiendo entrenado un modelo $\hat{f}$, para cada covariable $j \in \{1,2,...,p\}$ se construye un nuevo conjunto de datos permutando las observaciones de dicha variable mientras se mantienen las demás fijas. Luego se calcula el error \textit{out-of-bag}:
 
 \begin{equation}
-E_{OOB}(X_j) = \frac{1}{n} \sum_{i=1}^{n} \left( y_i -  \hat{f}^{(b)}(X_{i,j}) \right)^2    
+E_{OOB}(X_j) = \frac{1}{n} \sum_{i=1}^{n} \left( y_i -  \hat{f}_{OOB}(X_{i,j}) \right)^2    
 \end{equation}
+
+donde $\hat{f}_{OOB}(X_{i,j})$ representa la predicción agregada para la observación i, calculada utilizando únicamente aquellos árboles en los que i no formó parte de la muestra de entrenamiento, evaluada sobre el conjunto de datos con la variable j permutada.
 
 La importancia se obtiene comparando este error con el del modelo original:
 \begin{equation}
@@ -117,6 +121,7 @@ Sin embargo, cuando se calculan las importancias mediante PFI para estos modelos
     \label{fig:line-plot-importances}
 \end{figure}
 
+%#TODO: Podria sacar esto? Creo que no se entiende mucho
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1\textwidth]{images/capitulo_4/importance_heatmap.pdf}
@@ -159,7 +164,7 @@ Mientras que las técnicas de importancia de variables permiten identificar qué
 Esta sección presenta tres técnicas complementarias: los \textit{Partial Dependence Plots} (PDP), que estiman el efecto marginal promedio de una variable; los \textit{Individual Conditional Expectation} (ICE), que permiten visualizar heterogeneidad en los efectos; y las variantes centradas y derivadas que facilitan la identificación de interacciones.
 
 \subsection{\textit{Partial Dependence Plots} (PDP)}
-
+%#TODO: se X_s -> creo que ya esta, ser'ia que son complementarias a X_S?
 Los PDP fueron introducidos por \cite{friedman_2001} como una técnica para visualizar el efecto marginal de una o más covariables sobre la predicción del modelo. La idea central es aislar el efecto de un subconjunto de variables $X_S$ marginalizando sobre las demás variables $X_C$.
 
 Formalmente, la dependencia parcial se define como:
@@ -169,7 +174,7 @@ Formalmente, la dependencia parcial se define como:
 \bar{f}(X_S)=\mathcal{E}_{X_C}[\hat{f}(x)]=\int \hat{f}(X_S,X_C)p(X_C)dX_C    
 \end{equation}
 
-donde $\hat{f}(x)$ es el modelo entrenado, $X_S$ es el subconjunto de variables cuyo efecto se desea estimar, $X_C$ representa las variables complementarias, $p(X_C)$ es su distribución marginal, y $\mathcal{E}_{X_C}[\cdot]$ denota la esperanza sobre dicha distribución.
+donde $\hat{f}(x)$ es el modelo entrenado, $X_S$ es el subconjunto de variables cuyo efecto se desea estimar, $X_C$ representa las variables complementarias a $X_S$, $p(X_C)$ es su distribución marginal, y $\mathcal{E}_{X_C}[\cdot]$ denota la esperanza sobre dicha distribución.
 
 En la práctica, la distribución $p(X_C)$ es desconocida y se aproxima mediante la distribución empírica de los datos de entrenamiento:
  
@@ -251,52 +256,8 @@ Como complemento a los gráficos centrados, \cite{Goldstein2015} proponen los gr
 En este caso, la derivada de $\hat{f}$ con respecto a $X_S$ depende únicamente de $X_S$ y es idéntica para todas las observaciones. Por lo tanto, si las curvas derivadas coinciden, no existen interacciones; si difieren, la relación entre $X_S$ y la predicción depende de los valores de otras variables. Esta herramienta es particularmente útil cuando las curvas ICE centradas son difíciles de interpretar visualmente debido a la cantidad de observaciones o a la complejidad de los patrones.
 
 \section{Extensiones}
-
+%#TODO: Debería sacar también la parte de la relación con el  proceso generador de los datos? Lo puedo mencionar en la conclusión y listo.
 Las técnicas de interpretación presentadas en las secciones anteriores permiten comprender cómo un modelo utiliza las variables para generar predicciones. Sin embargo, surgen naturalmente dos preguntas adicionales: ¿pueden estas técnicas informar sobre relaciones causales? y ¿qué relación tienen con el verdadero proceso generador de los datos? Esta sección aborda ambas cuestiones, explorando las condiciones bajo las cuales las técnicas de interpretación admiten una lectura causal y cómo se relacionan formalmente con las propiedades poblacionales.
-
-\subsection{Interpretación causal}
-
-Los modelos de aprendizaje automático convencionales se basan en asociaciones estadísticas y no contemplan intervenciones ni escenarios contrafactuales \cite{pearl_2018}. No obstante, resulta de interés analizar bajo qué condiciones las técnicas de interpretación pueden admitir una lectura causal. Este es el eje central del trabajo de \cite{Zhao_2021}, donde se demuestra que los PDP poseen una interpretación causal bajo supuestos específicos.
-
-\subsubsection{Conexión con el \textit{backdoor adjustment}}
-
-La clave de la interpretación causal reside en la conexión entre el PDP y el \textit{backdoor adjustment} de \cite{Pearl1993}. El ajuste \textit{backdoor} permite identificar el efecto causal de una variable $X_S$ sobre $Y$ cuando se dispone de un conjunto de variables $X_C$ que satisface ciertas condiciones. Formalmente:
-
-\begin{equation}
-    \label{eq:back-door}
-P(Y|do(X_S=x_S))=\int P(Y|X_S=x_S, X_C=x_C)dP(x_C)    
-\end{equation}
-
-donde $P(Y|do(X_S=x_S))$ representa la distribución de $Y$ tras una intervención que fija $X_S$ en el valor $x_S$. Esta fórmula permite identificar el efecto causal de $X_S$ sobre $Y$ siempre que se cumplan dos condiciones: (1) ninguna variable en $X_C$ sea descendiente de $X_S$ en el grafo causal, y (2) $X_C$ bloquee todos los caminos \textit{backdoor} entre $X_S$ e $Y$, es decir, todos los caminos que conectan $X_S$ con $Y$ a través de causas comunes.
-
-Para establecer la conexión con el PDP, se parte del modelo entrenado $\hat{f}(x)$ que aproxima la esperanza condicional:
-
-\begin{equation}
-    \label{eq:back-door-expectation}
-    \hat{f}(x) \approx E[Y \mid X=x]
-\end{equation}
-
-Si el modelo está bien especificado, es decir, $\hat{f}(x_S, x_C) = E[Y \mid X_S = x_S, X_C = x_C]$, entonces el PDP puede expresarse como:
-
-\begin{equation}
-\begin{aligned}
-\text{PDP}(x_S) &= \int \hat{f}(x_S, x_C) \, dP(x_C) \\
-                &= \int E[Y \mid X_S = x_S, X_C = x_C] \, dP(x_C) \\
-                &= E[Y \mid do(X_S = x_S)]
-\end{aligned}
-\end{equation}
-
-Esta equivalencia muestra que el PDP coincide con el efecto causal intervencionista cuando: (1) el modelo aproxima correctamente la esperanza condicional, y (2) el conjunto $X_C$ satisface el criterio \textit{backdoor}. Bajo estas condiciones, el PDP puede interpretarse como el efecto promedio de intervenir en $X_S$, lo que proporciona una justificación causal para su uso.
-
-\subsubsection{Métodos alternativos para inferencia causal}
-
-Cuando las condiciones del criterio \textit{backdoor} no se satisfacen, o cuando el objetivo explícito es la inferencia causal, existen \textit{frameworks} diseñados específicamente para este propósito.
-
-El \textit{Double Machine Learning} (DML) propuesto por \cite{Chernozhukov_2018} utiliza modelos de aprendizaje automático para estimar los \textit{nuisance parameters}: las relaciones entre el tratamiento y los \textit{confounders}, y entre el resultado y los \textit{confounders}. Mediante el uso de \textit{cross-fitting} (entrenamiento y predicción en muestras separadas), DML permite obtener estimadores del efecto causal con propiedades estadísticas deseables, incluyendo normalidad asintótica y validez de intervalos de confianza, incluso cuando se utilizan modelos complejos como ensambles de árboles o redes neuronales.
-
-Los \textit{Causal Forests} propuestos por \cite{Wager_2018} extienden la lógica de los \textit{Random Forests} tradicionales hacia la estimación de efectos de tratamiento heterogéneos (CATE). Su principal innovación reside en adaptar el criterio de división de los árboles: en lugar de optimizar el poder predictivo, las particiones se diseñan para maximizar la diferencia de los efectos del tratamiento entre los nodos. Este enfoque permite identificar subgrupos poblacionales con respuestas diferentes frente a una intervención, revelando así relaciones causales.
-
-Estos métodos representan un cambio de paradigma respecto a las técnicas de interpretación clásicas: en lugar de interpretar un modelo predictivo, construyen modelos específicamente diseñados para estimar efectos causales. Su estudio en profundidad excede el alcance de este trabajo.
 
 \subsection{Relación con el proceso generador de datos} 
 

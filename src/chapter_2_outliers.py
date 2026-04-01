@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 # Define output directory
 OUTPUT_DIR = Path('book/images/capitulo_2')
 
-def sim_data(N):
-    np.random.seed(42)
+def sim_data(N, p_outlier=0.05, seed=42):
+    np.random.seed(seed)
     
     # Parameters
     beta_intercept = np.random.uniform(0, 2)
@@ -26,15 +26,10 @@ def sim_data(N):
     x_non_outlier = np.random.uniform(-5, 5, (N, 4))
     
     # 2. Generate outlier feature
-    # Problem source: This resulted in shape (N,), a flat 1D array
-    p_outlier = 0.05
     is_outlier = np.random.binomial(1, p_outlier, N)
     x_outlier_raw = (1 - is_outlier) * np.random.randn(N) + is_outlier * (100 * np.random.randn(N))
     
-    # CORRECTION 1: Reshape to (N, 1) so it becomes a 2D column vector
     x_outlier = x_outlier_raw.reshape(-1, 1) 
-    
-    # CORRECTION 2: Use axis=1 to stack columns (features), not rows (observations)
     x_complete = np.concatenate((x_non_outlier, x_outlier), axis=1)
     
     # Generate Y
@@ -87,17 +82,28 @@ def save_results(fig, save_path: Path):
     plt.close(fig)
     logger.info(f"Saved plot to: {save_path}")
 
+
+
+
 def main():
     logger.info("Starting analysis...")
-    x, y = sim_data(100)
-    lm_model = fit_lm(x, y)
+
+    # With outliers (p_outlier = 0.05)
+    x, y = sim_data(100, p_outlier=0.05)
     tree_model = fit_tree(x, y)
     
     fig_tree = visualize_tree(tree_model, x)
     fig_histogram_outliers = histogram_outliers(y)
     
     save_results(fig_tree, OUTPUT_DIR / 'tree_outliers.pdf')
-    save_results(fig_histogram_outliers, OUTPUT_DIR / 'histogram_outliers.pdf')    
+    save_results(fig_histogram_outliers, OUTPUT_DIR / 'histogram_outliers.pdf')
+
+    # Without outliers (p_outlier = 0, clean generation)
+    x_clean, y_clean = sim_data(100, p_outlier=0)
+    tree_clean = fit_tree(x_clean, y_clean)
+    fig_tree_clean = visualize_tree(tree_clean, x_clean)
+    save_results(fig_tree_clean, OUTPUT_DIR / 'tree_no_outliers.pdf')
+
     logger.info("Analysis complete.")
 
 

@@ -1,0 +1,387 @@
+@misc{abalone_1,
+  title = {Abalone},
+  author = {Nash, Warwick and Sellers, Tracy and Talbot, Simon and Cawthorn, Andrew and Ford, Wes},
+  date = {1994},
+  howpublished = {UCI Machine Learning Repository}
+}
+
+@misc{airfoil_self-noise_291,
+  title = {Airfoil Self-Noise},
+  author = {Brooks, Thomas and Pope, D. and Marcolini, Michael},
+  date = {1989},
+  howpublished = {UCI Machine Learning Repository}
+}
+
+@book{angelopoulos_2023,
+  title = {Conformal Prediction: A Gentle Introduction},
+  author = {Angelopoulos, Anastasios and Bates, Stephen},
+  date = {2023-01},
+  doi = {10.1561/9781638281597},
+  isbn = {978-1-63828-158-0}
+}
+
+@article{berk_2016,
+  title = {An Introduction to Ensemble Methods for Data Analysis},
+  author = {Berk, Richard},
+  date = {2006-02},
+  journaltitle = {Sociological Methods \& Research},
+  volume = {34},
+  doi = {10.1177/0049124105283119}
+}
+
+@article{Breiman1996,
+  title = {Bagging Predictors},
+  author = {Breiman, Leo},
+  date = {1996},
+  journaltitle = {Machine Learning},
+  volume = {24},
+  number = {2},
+  pages = {123--140},
+  doi = {10.1007/BF00058655}
+}
+
+@article{Breiman1996HeuristicsOI,
+  title = {Heuristics of Instability and Stabilization in Model Selection},
+  author = {Breiman, L.},
+  date = {1996},
+  journaltitle = {Annals of Statistics},
+  volume = {24},
+  pages = {2350--2383},
+  url = {https://api.semanticscholar.org/CorpusID:50814231}
+}
+
+@book{breimanClassificationRegressionTrees1984,
+  title = {Classification and {{Regression Trees}}},
+  author = {Breiman, Leo and Friedman, Jerome H. and Olshen, Richard A. and Stone, Charles J.},
+  date = {1984},
+  publisher = {Routledge},
+  doi = {10.1201/9781315139470}
+}
+
+@article{breimanRandomForests2001,
+  title = {Random {{Forests}}},
+  author = {Breiman, Leo},
+  date = {2001},
+  journaltitle = {Machine Learning},
+  volume = {45},
+  number = {1},
+  pages = {5--32},
+  issn = {1573-0565},
+  doi = {10.1023/A:1010933404324},
+  url = {https://doi.org/10.1023/A:1010933404324},
+  abstract = {Random forests are a combination of tree predictors such that each tree depends on the values of a random vector sampled independently and with the same distribution for all trees in the forest. The generalization error for forests converges a.s. to a limit as the number of trees in the forest becomes large. The generalization error of a forest of tree classifiers depends on the strength of the individual trees in the forest and the correlation between them. Using a random selection of features to split each node yields error rates that compare favorably to Adaboost (Y. Freund \& R. Schapire, Machine Learning: Proceedings of the Thirteenth International conference, ***, 148–156), but are more robust with respect to noise. Internal estimates monitor error, strength, and correlation and these are used to show the response to increasing the number of features used in the splitting. Internal estimates are also used to measure variable importance. These ideas are also applicable to regression.}
+}
+
+@article{breimanStatisticalModelingTwo2001,
+  title = {Statistical {{Modeling}}: {{The Two Cultures}} (with Comments and a Rejoinder by the Author)},
+  author = {Breiman, Leo},
+  date = {2001},
+  journaltitle = {Statistical Science},
+  volume = {16},
+  number = {3},
+  pages = {199--231},
+  publisher = {Institute of Mathematical Statistics},
+  doi = {10.1214/ss/1009213726},
+  url = {https://doi.org/10.1214/ss/1009213726}
+}
+
+@article{buhlamn_2012,
+  title = {Bagging, Boosting and Ensemble Methods},
+  author = {Bühlmann, Peter},
+  date = {2012-01},
+  journaltitle = {Handbook of Computational Statistics},
+  doi = {10.1007/978-3-642-21551-3_33},
+  isbn = {978-3-642-21550-6}
+}
+
+@article{chernozhukovDoubleDebiasedMachine2018,
+  title = {Double/Debiased Machine Learning for Treatment and Structural Parameters},
+  author = {Chernozhukov, Victor and Chetverikov, Denis and Demirer, Mert and Duflo, Esther and Hansen, Christian and Newey, Whitney and Robins, James},
+  date = {2018-01},
+  journaltitle = {The Econometrics Journal},
+  volume = {21},
+  number = {1},
+  pages = {C1-C68},
+  issn = {1368-4221},
+  doi = {10.1111/ectj.12097},
+  url = {https://doi.org/10.1111/ectj.12097},
+  abstract = {We revisit the classic semi‐parametric problem of inference on a low‐dimensional parameter θ0 in the presence of high‐dimensional nuisance parameters η0. We depart from the classical setting by allowing for η0 to be so high‐dimensional that the traditional assumptions (e.g. Donsker properties) that limit complexity of the parameter space for this object break down. To estimate η0, we consider the use of statistical or machine learning (ML) methods, which are particularly well suited to estimation in modern, very high‐dimensional cases. ML methods perform well by employing regularization to reduce variance and trading off regularization bias with overfitting in practice. However, both regularization bias and overfitting in estimating η0 cause a heavy bias in estimators of θ0 that are obtained by naively plugging ML estimators of η0 into estimating equations for θ0. This bias results in the naive estimator failing to be N−1/2 consistent, where N is the sample size. We show that the impact of regularization bias and overfitting on estimation of the parameter of interest θ0 can be removed by using two simple, yet critical, ingredients: (1) using Neyman‐orthogonal moments/scores that have reduced sensitivity with respect to nuisance parameters to estimate θ0; (2) making use of cross‐fitting, which provides an efficient form of data‐splitting. We call the resulting set of methods double or debiased ML (DML). We verify that DML delivers point estimators that concentrate in an N−1/2‐neighbourhood of the true parameter values and are approximately unbiased and normally distributed, which allows construction of valid confidence statements. The generic statistical theory of DML is elementary and simultaneously relies on only weak theoretical requirements, which will admit the use of a broad array of modern ML methods for estimating the nuisance parameters, such as random forests, lasso, ridge, deep neural nets, boosted trees, and various hybrids and ensembles of these methods. We illustrate the general theory by applying it to provide theoretical properties of the following: DML applied to learn the main regression parameter in a partially linear regression model; DML applied to learn the coefficient on an endogenous variable in a partially linear instrumental variables model; DML applied to learn the average treatment effect and the average treatment effect on the treated under unconfoundedness; DML applied to learn the local average treatment effect in an instrumental variables setting. In addition to these theoretical applications, we also illustrate the use of DML in three empirical examples.}
+}
+
+@misc{concrete_compressive_strength_165,
+  title = {Concrete Compressive Strength},
+  author = {Yeh, I-Cheng},
+  date = {1998},
+  howpublished = {UCI Machine Learning Repository}
+}
+
+@misc{diabetes_34,
+  title = {Diabetes},
+  author = {Kahn, Michael},
+  howpublished = {UCI Machine Learning Repository}
+}
+
+@book{efron1994boostrap,
+  title = {An Introduction to the Bootstrap},
+  author = {Efron, B. and Tibshirani, R.J.},
+  date = {1994},
+  series = {Chapman \& Hall/{{CRC}} Monographs on Statistics \& Applied Probability},
+  publisher = {Taylor \& Francis},
+  url = {https://books.google.com.ar/books?id=gLlpIUxRntoC},
+  isbn = {978-0-412-04231-7},
+  lccn = {93004489}
+}
+
+@article{fisherAllModelsAre2019,
+  title = {All {{Models}} Are {{Wrong}}, but {{Many}} Are {{Useful}}: {{Learning}} a {{Variable}}'s {{Importance}} by {{Studying}} an {{Entire Class}} of {{Prediction Models Simultaneously}}},
+  author = {Fisher, Aaron and Rudin, Cynthia and Dominici, Francesca},
+  date = {2019},
+  journaltitle = {Journal of Machine Learning Research},
+  volume = {20},
+  eprint = {34335110},
+  eprinttype = {pubmed},
+  pages = {177},
+  issn = {1532-4435},
+  pmcid = {PMC8323609},
+  keywords = {conditional variable importance,interpretable models,permutation importance,Rashomon,transparency,U-statistics}
+}
+
+@article{freedman_81,
+  title = {Bootstrapping Regression Models},
+  author = {Freedman, D. A.},
+  date = {1981},
+  journaltitle = {The Annals of Statistics},
+  volume = {9},
+  number = {6},
+  pages = {1218--1228},
+  publisher = {Institute of Mathematical Statistics},
+  doi = {10.1214/aos/1176345638},
+  url = {https://doi.org/10.1214/aos/1176345638},
+  keywords = {bootstrap,Correlation,least squares,regression,Wasserstein metrics}
+}
+
+@article{freiesleben_2024,
+  title = {Scientific Inference with Interpretable Machine Learning: {{Analyzing}} Models to Learn about Real-World Phenomena},
+  author = {Freiesleben, Timo and König, Gunnar and Molnar, Christoph and Tejero-Cantero, Álvaro},
+  date = {2024-07},
+  journaltitle = {Minds and Machines},
+  volume = {34},
+  doi = {10.1007/s11023-024-09691-z}
+}
+
+@article{friedmanGreedyFunctionApproximation2001,
+  title = {Greedy Function Approximation: {{A}} Gradient Boosting Machine.},
+  author = {Friedman, Jerome H.},
+  date = {2001},
+  journaltitle = {The Annals of Statistics},
+  volume = {29},
+  number = {5},
+  pages = {1189--1232},
+  publisher = {Institute of Mathematical Statistics},
+  doi = {10.1214/aos/1013203451},
+  url = {https://doi.org/10.1214/aos/1013203451},
+  keywords = {boosting,decision trees,Function estimation,robust nonparametric regression}
+}
+
+@article{goldsteinPeekingBlackBox2015,
+  title = {Peeking {{Inside}} the {{Black Box}}: {{Visualizing Statistical Learning With Plots}} of {{Individual Conditional Expectation}}},
+  author = {Goldstein, Alex and Kapelner, Adam and Bleich, Justin and {and}, Emil Pitkin},
+  date = {2015},
+  journaltitle = {Journal of Computational and Graphical Statistics},
+  volume = {24},
+  number = {1},
+  pages = {44--65},
+  publisher = {ASA Website},
+  doi = {10.1080/10618600.2014.907095},
+  url = {https://doi.org/10.1080/10618600.2014.907095}
+}
+
+@book{hastieElementsStatisticalLearning2009,
+  title = {The {{Elements}} of {{Statistical Learning}}},
+  author = {Hastie, Trevor and Tibshirani, Robert and Friedman, Jerome},
+  date = {2009},
+  publisher = {Springer},
+  doi = {10.1007/978-0-387-84858-7}
+}
+
+@book{jamesIntroductionStatisticalLearning2023,
+  title = {An {{Introduction}} to {{Statistical Learning}}: With {{Applications}} in {{R}}},
+  author = {James, Gareth and Witten, Daniela and Hastie, Trevor and Tibshirani, Robert},
+  date = {2023},
+  publisher = {Springer},
+  doi = {10.1007/978-3-031-38747-0}
+}
+
+@book{maronna2019robust,
+  title = {Robust Statistics: {{Theory}} and Methods (with {{R}})},
+  author = {Maronna, R.A. and Martin, R.D. and Yohai, V.J. and Salibián-Barrera, M.},
+  date = {2019},
+  series = {Wiley Series in Probability and Statistics},
+  publisher = {Wiley},
+  url = {https://books.google.es/books?id=K5RxDwAAQBAJ},
+  isbn = {978-1-119-21468-7},
+  lccn = {2018037714}
+}
+
+@misc{mentch_2021,
+  title = {Bridging Breiman's Brook: {{From}} Algorithmic Modeling to Statistical Learning},
+  author = {Mentch, Lucas and Hooker, Giles},
+  date = {2021},
+  eprint = {2102.12328},
+  eprinttype = {arXiv},
+  eprintclass = {stat.OT},
+  url = {https://arxiv.org/abs/2102.12328}
+}
+
+@misc{model_agnostic_interp,
+  title = {Model-Agnostic Interpretability of Machine Learning},
+  author = {Ribeiro, Marco Tulio and Singh, Sameer and Guestrin, Carlos},
+  date = {2016},
+  eprint = {1606.05386},
+  eprinttype = {arXiv},
+  eprintclass = {stat.ML},
+  url = {https://arxiv.org/abs/1606.05386}
+}
+
+@article{moreira_2012,
+  title = {Ensemble Approaches for Regression: A Survey},
+  author = {Moreira, João and Soares, Carlos and Jorge, Alípio and Sousa, Jorge},
+  date = {2012-11},
+  journaltitle = {ACM Computing Surveys},
+  volume = {45},
+  pages = {10:1-10:40},
+  doi = {10.1145/2379776.2379786}
+}
+
+@article{natekin_knoll_2013,
+  title = {Gradient Boosting Machines, a Tutorial},
+  author = {Natekin, Alexey and Knoll, Alois},
+  date = {2013},
+  journaltitle = {Frontiers in Neurorobotics},
+  volume = {7},
+  issn = {1662-5218},
+  doi = {10.3389/fnbot.2013.00021},
+  url = {https://www.frontiersin.org/journals/neurorobotics/articles/10.3389/fnbot.2013.00021},
+  abstract = {¡p¿Gradient boosting machines are a family of powerful machine-learning techniques that have shown considerable success in a wide range of practical applications. They are highly customizable to the particular needs of the application, like being learned with respect to different loss functions. This article gives a tutorial introduction into the methodology of gradient boosting methods with a strong focus on machine learning aspects of modeling. A theoretical information is complemented with descriptive examples and illustrations which cover all the stages of the gradient boosting model design. Considerations on handling the model complexity are discussed. Thr ee practical examples of gradient boosting applications are presented and comprehensively analyzed.¡/p¿}
+}
+
+@inproceedings{pearl_2018,
+  title = {Theoretical Impediments to Machine Learning with Seven Sparks from the Causal Revolution},
+  booktitle = {Proceedings of the Eleventh {{ACM}} International Conference on Web Search and Data Mining},
+  author = {Pearl, Judea},
+  date = {2018},
+  series = {Wsdm '18},
+  pages = {3},
+  publisher = {Association for Computing Machinery},
+  address = {New York, NY, USA},
+  location = {Marina Del Rey, CA, USA},
+  doi = {10.1145/3159652.3176182},
+  url = {https://doi.org/10.1145/3159652.3176182},
+  abstract = {Current machine learning systems operate, almost exclusively, in a statistical, or model-blind mode, which entails severe theoretical limits on their power and performance. Such systems cannot reason about interventions and retrospection and, therefore, cannot serve as the basis for strong AI. To achieve human level intelligence, learning machines need the guidance of a model of reality, similar to the ones used in causal inference. To demonstrate the essential role of such models, I will present a summary of seven tasks which are beyond reach of current machine learning systems and which have been accomplished using the tools of causal inference.},
+  isbn = {978-1-4503-5581-0},
+  pagetotal = {1},
+  keywords = {keynote talk}
+}
+
+@article{Pearl1993,
+  title = {Comment: {{Graphical}} Models, Causality and Intervention},
+  author = {Pearl, Judea},
+  date = {1993},
+  journaltitle = {Statistical Science},
+  volume = {8},
+  number = {3},
+  pages = {266--269},
+  doi = {10.1214/ss/1177010894},
+  url = {https://doi.org/10.1214/ss/1177010894}
+}
+
+@article{shmueliExplainPredict2010,
+  title = {To {{Explain}} or to {{Predict}}?},
+  author = {Shmueli, Galit},
+  date = {2010},
+  journaltitle = {Statistical Science},
+  volume = {25},
+  number = {3},
+  pages = {289--310},
+  publisher = {Institute of Mathematical Statistics},
+  doi = {10.1214/10-STS330},
+  url = {https://doi.org/10.1214/10-STS330},
+  keywords = {causality,data mining,Explanatory modeling,predictive modeling,predictive power,scientific research,statistical strategy}
+}
+
+@article{strobl_2008,
+  title = {Conditional Variable Importance for Random Forests},
+  author = {Strobl, Carolin and Boulesteix, Anne-Laure and Kneib, Thomas and Augustin, Thomas and Zeileis, Achim},
+  date = {2008-08},
+  journaltitle = {BMC bioinformatics},
+  volume = {9},
+  pages = {307},
+  doi = {10.1186/1471-2105-9-307}
+}
+
+@incollection{vovk_2005,
+  title = {Algorithmic Learning in a Random World},
+  booktitle = {Algorithmic {{Learning}} in a {{Random World}}},
+  author = {Vovk, Vladimir and Gammerman, Alex and Shafer, Glenn},
+  date = {2005-01},
+  doi = {10.1007/b106715}
+}
+
+@article{wagerEstimationInferenceHeterogeneous2018,
+  title = {Estimation and {{Inference}} of {{Heterogeneous Treatment Effects}} Using {{Random Forests}}},
+  author = {Wager, Stefan and Athey, Susan},
+  date = {2018},
+  journaltitle = {Journal of the American Statistical Association},
+  volume = {113},
+  number = {523},
+  pages = {1228--1242},
+  publisher = {ASA Website},
+  doi = {10.1080/01621459.2017.1319839},
+  url = {https://doi.org/10.1080/01621459.2017.1319839}
+}
+
+@book{wassermanAllStatisticsConcise2004,
+  title = {All of {{Statistics}}: {{A Concise Course}} in {{Statistical Inference}}},
+  shorttitle = {All of {{Statistics}}},
+  author = {Wasserman, Larry},
+  date = {2004},
+  series = {Springer {{Texts}} in {{Statistics}}},
+  publisher = {Springer},
+  location = {New York, NY},
+  doi = {10.1007/978-0-387-21736-9},
+  url = {http://link.springer.com/10.1007/978-0-387-21736-9},
+  urldate = {2026-03-29},
+  isbn = {978-1-4419-2322-6 978-0-387-21736-9},
+  langid = {english},
+  keywords = {Bootstrapping,classification,data mining,machine learning,Mathematica,mathematical statistics,Random variable,ROOT,STATISTICA}
+}
+
+@misc{wine_109,
+  title = {Wine},
+  author = {Aeberhard, Stefan and Forina, M.},
+  date = {1992},
+  howpublished = {UCI Machine Learning Repository}
+}
+
+@article{zhaoCausalInterpretationsBlackBox2021,
+  title = {Causal {{Interpretations}} of {{Black-Box Models}}},
+  author = {Zhao, Qingyuan and {and}, Trevor Hastie},
+  date = {2021},
+  journaltitle = {Journal of Business \& Economic Statistics},
+  volume = {39},
+  number = {1},
+  pages = {272--281},
+  publisher = {ASA Website},
+  doi = {10.1080/07350015.2019.1624293},
+  url = {https://doi.org/10.1080/07350015.2019.1624293}
+}
+
+@misc{zhou2020,
+  title = {Unbiased Measurement of Feature Importance in Tree-Based Methods},
+  author = {Zhou, Zhengze and Hooker, Giles},
+  date = {2020},
+  eprint = {1903.05179},
+  eprinttype = {arXiv},
+  eprintclass = {stat.ML},
+  url = {https://arxiv.org/abs/1903.05179}
+}

@@ -136,6 +136,8 @@ Para ilustrar este comportamiento, se realizó una simulación generando $N=100$
 
 donde $\beta_i$ son coeficientes aleatorios, y las variables explicativas $X_1, \dots, X_4$ se distribuyen uniformemente, $X_i \sim \mathcal{U}(-5, 5)$. La variable $X_5$ es la encargada de introducir los valores atípicos, distribuida como una mezcla de normales. Siguiendo la notación de \cite{maronna2019robust}, su función de distribución $F$ se define como:
 
+%#TODO Si no hay outliers el arbol cambia? -> El arbol cambia. Agregue una imagen al apendice `book/images/capitulo_2`
+
 \begin{equation}
     F = (1-\epsilon) \mathcal{N}(\mu,1) + \epsilon \mathcal{N}(\mu,\tau^2)
 \end{equation}
@@ -151,7 +153,7 @@ La \autoref{fig:histogram_outliers} muestra el histograma de la variable respues
     \label{fig:histogram_outliers}
 \end{figure}
 
-Al ajustar un árbol de regresión a estos datos (limitando la profundidad para facilitar la visualización), el algoritmo identifica rápidamente la variable $X_5$ como un punto de corte crítico. Como se observa en la \autoref{fig:tree_outliers}, el árbol logra separar eficazmente las observaciones regulares de los valores anómalos. Las divisiones basadas en $X_5$ actúan como un filtro, agrupando los \textit{outliers} en nodos terminales con pocos datos pero con medias muy altas, permitiendo que los demás nodos capturen correctamente la relación subyacente para el resto de la muestra.
+Al ajustar un árbol de regresión a estos datos (limitando la profundidad para facilitar la visualización), el algoritmo identifica rápidamente la variable $X_5$ como un punto de corte crítico. Como se observa en la \autoref{fig:tree_outliers}, el árbol logra separar eficazmente las observaciones regulares de los valores anómalos. Las divisiones basadas en $X_5$ actúan como un filtro, agrupando los \textit{outliers} en nodos terminales con pocos datos pero con medias muy altas, permitiendo que los demás nodos capturen correctamente la relación subyacente para el resto de la muestra \footnote{En la \autoref{fig:tree_no_outliers} del apéndice puede verse cómo quedaría el árbol de decisión sin datos atípicos.}.
 
 \begin{figure}[ht!]
     \centering

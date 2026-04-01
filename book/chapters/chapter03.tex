@@ -4,26 +4,31 @@ Como se mencionó anteriormente, dos de los problemas principales de los árbole
 
 Uno de los grandes problemas de los árboles decisión es la varianza que tienen, por lo que parece intuitivo aplicar técnicas que permitan promediar métodos estadísticos para reducir la varianza manteniendo el sesgo bajo.
 
-La idea de \textit{Bagging} \cite{Breiman1996} es calcular $\hat{f}^1(x),\hat{f}^2(x),...,\hat{f}^B(x)$ usando B muestras \textit{bootstrap} y promediar las predicciones para reducir la varianza. Es decir
+La idea de \textit{Bagging} \cite{Breiman1996} es calcular $\hat{f}^1(x),\hat{f}^2(x),...,\hat{f}^B(x)$ usando B muestras \textit{bootstrap}\footnote{El bootstrap es un método de remuestreo que se utiliza para cuantificar la incertidumbre o reducir la varianza de un estimador. Consiste en generar múltiples muestras simuladas a partir de un único conjunto de datos mediante extracciones aleatorias con reemplazo. Al utilizar el reemplazo, cada nueva muestra mantiene el tamaño del conjunto original, pero altera la distribución al repetir ciertas observaciones y excluir otras.} y promediar las predicciones para reducir la varianza. Es decir
+\begin{equation}
+    \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
+\end{equation}
+
+La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán muy poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo. Como se ve más formalmente a continuación, partiendo de las predicciones
+
+%#TODO: Descomposición del error? -> listo! quedó más explicíto
 
 \begin{equation}
     \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
 \end{equation}
 
-La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán muy poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo. Como se ve más formalmente a continuación
-
-Partiendo de las predicciones
-\begin{equation}
-    \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
-\end{equation}
-
-calcular el error viene dado por
+y asumiendo que los datos provienen de un modelo de la forma $Y = f(x) + \epsilon$, donde $f(x) = E[Y \mid x]$ es la verdadera función que relaciona las covariables con la respuesta y $\epsilon$ es un término de error con $E[\epsilon] = 0$ y $Var(\epsilon) = \sigma^2$, el error cuadrático medio de la predicción se puede descomponer como
 
 \begin{equation}
-    MSE=E\Big[\big(y-\hat{f}_{bag}(x)\big)^2\Big] = \text{Sesgo}^2 + \text{Varianza}+ \sigma^2
+    \begin{aligned}
+    MSE &= E\Big[\big(Y-\hat{f}_{bag}(x)\big)^2\Big] \\
+        &= \Big(E[\hat{f}_{bag}(x)] - f(x)\Big)^2 + Var\Big(\hat{f}_{bag}(x)\Big) + \sigma^2
+    \end{aligned}
+    \label{eq:bias-variance}
 \end{equation}
 
-ahora nos concentramos en cómo la varianza afecta al error
+El primer término, $\big(E[\hat{f}_{bag}(x)] - f(x)\big)^2$, es el sesgo al cuadrado y mide cuánto se desvía, en promedio, la predicción del modelo respecto de la verdadera función $f(x)$. El segundo término, $Var(\hat{f}_{bag}(x))$, es la varianza del modelo y captura cuánto cambian las predicciones al variar la muestra de entrenamiento. El tercer término, $\sigma^2 = Var(Y - f(x))$, es el error irreducible, es decir, la variabilidad intrínseca de los datos que ningún modelo puede capturar. Dado que \textit{Bagging} utiliza árboles de mucha profundidad, el sesgo se mantiene bajo, por lo que la mejora proviene principalmente de la reducción de la varianza. Concentrándose entonces en cómo la varianza se ve afectada
+
 \begin{equation}
     Var\Big(\hat{f}_{bag}(x)\Big)=Var\Bigg(\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)=\frac{1}{B^2}Var\Bigg(\sum_{b=1}^{B}\hat{f}^b(x)\Bigg)
 \end{equation}
@@ -49,6 +54,8 @@ volviendo a la varianza total:
     \end{aligned}
 \end{equation}
 
+%#TODO: Decir algo más de como es el boostrap -> Listo! lo sume como nota al pie, pero quizas tendria que ser mas preciso...
+
 Por lo tanto, cuando $B \to \infty$, el término $\frac{1}{B} \to 0$ y la varianza se aproxima a $\rho\sigma^2$. Esto implica que la reducción de la varianza depende tanto de $B$ como de $\rho$. Dado que la correlación entre árboles $\rho$ es menor a 1, la varianza final ($\rho\sigma^2$) resultará menor que la varianza original ($\sigma^2$), demostrando la efectividad del método. 
 
 \textit{Bagging} tiene una forma muy natural de calcular el error, básicamente se basa en el hecho de que cuando se hace una muestra \textit{bootstrap} solamente se toma en cuenta aproximadamente el 63\% de los datos. Para demostrarlo, partimos de la probabilidad de no ser seleccionado en una muestra:
@@ -56,8 +63,9 @@ Por lo tanto, cuando $B \to \infty$, el término $\frac{1}{B} \to 0$ y la varian
 \begin{equation}
 P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}    
 \end{equation}
-	
-Luego, como se toman $n$ muestras con reemplazo, la probabilidad de no ser seleccionado en ninguna muestra es
+
+%#TODO: b=n? -> Listo! creo que ahora esta mas claro. Validar si N=k=n es decir que cada muestra tiene que tener la misma cantidad de observaciones que la original, repitiendo algunas
+Luego, como se realizan $n$ extracciones con reemplazo, por lo que la probabilidad de no ser seleccionado en ninguna muestra es
 \begin{equation}
 P(\text{No ser seleccionado en ninguna muestra}) = \Bigg(1-\frac{1}{n}\Bigg)^{n}
 \end{equation}
@@ -111,7 +119,7 @@ Esto significa que, con suficientes árboles, la predicción de \textit{Random F
 \end{figure}
 
 \section{Boosting}
-
+%#TODO: el modelo se puede decir algo mas? en regresion es un modelo de regresion? -> No me queda claro que mas agregar
 A diferencia de \textit{Bagging}, \textit{Boosting} no promedia predicciones, sino que construye un modelo iterativamente, donde cada modelo se construye con el objetivo de corregir el error cometido por el modelo anterior. A continuación se presenta un ejemplo de cómo funciona el algoritmo de \textit{Gradient Boosting Machines} (\textit{GBM}) propuesto por \cite{friedman_2001}.
 
 Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\hat{f}(x)$ a partir de un conjunto de datos $(X,Y)$. En este caso, el conjunto de datos es una muestra i.i.d. de $(X,Y)$ de tamaño $n$:
@@ -135,15 +143,18 @@ En definitiva, se ve que la forma de aproximar la función $f(x)$ es a través d
 \end{equation}
 
 \subsection{Algoritmo}
-
+%#TODO: El gradiente? - Listo! Creo que quedo mas claro
 El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
 
 \begin{enumerate}
     \item Iniciar $\hat{f}_0(x)$ con una constante.
     \item Para cada iteración $b=1,2,...,B$:
     \begin{itemize}
-        \item Calcular el gradiente de la función de pérdida y utilizar su valor negativo.
-        \item Ajustar el modelo base $h_b(x,\theta_b)$ a los datos $(X,g_b(X))$.
+        \item Calcular el negativo del gradiente de la función de pérdida para cada observación $i=1,...,n$:
+        \begin{equation}
+        -g_{ib} = -\left[\frac{\partial L(y_i, f(x_i))}{\partial f(x_i)}\right]_{f=\hat{f}_{b-1}}
+        \end{equation}
+        \item Ajustar el modelo base $h_b(x,\theta_b)$ a los valores $-g_{ib}$. % <--- ¡Aquí está la corrección del signo!
         \item Encontrar el mejor tamaño de paso $\gamma_b$:
     \begin{equation}
     \gamma_b=\arg\min_{\gamma}\sum_{i=1}^{n}L\Big(y_i,\hat{f}_{b-1}(x_i)+\gamma h_b(x_i,\theta_b)\Big)    
@@ -153,8 +164,9 @@ El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos
     \hat{f}_b(x)=\hat{f}_{b-1}(x)+\gamma_b h_b(x,\theta_b)    
     \end{equation}
     \end{itemize}
-    \item Devolver el modelo final.
+    \item Devolver el modelo final $\hat{f}_B(x)$.
 \end{enumerate}
+
 
 \subsection{Funciones de pérdida} 
 Dependiendo del problema y los datos con los que se esté trabajando, se pueden utilizar distintas funciones de pérdida. A continuación se presentan algunas de las más comunes para problemas de regresión.
@@ -175,10 +187,11 @@ Una de las ventajas que tienen este tipo de funciones de pérdida es que son dif
 \end{aligned}
 \end{equation}
 
-Luego, como el gradiente indica la dirección de máximo crecimiento, el negativo del gradiente indica la dirección de máximo decrecimiento. Lo cual es lo que se busca en el algoritmo de \textit{boosting}, es decir, minimizar la función de pérdida. Por lo que el gradiente de la función de pérdida es:
+
+Luego, como el gradiente indica la dirección de máximo crecimiento, el negativo del gradiente indica la dirección de máximo decrecimiento. Lo cual es lo que se busca en el algoritmo de \textit{boosting}, es decir, minimizar la función de pérdida. Por lo que el negativo del gradiente evaluado para la observación $i$ en la iteración $b$ resulta ser:
 
 \begin{equation}
-- g_b(x)=y-f(x)
+- g_{ib} = y_i - \hat{f}_{b-1}(x_i)
 \end{equation}
 
 es decir, el residuo.
