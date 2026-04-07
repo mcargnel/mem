@@ -4,14 +4,12 @@ Como se mencionó anteriormente, dos de los problemas principales de los árbole
 
 Uno de los grandes problemas de los árboles decisión es la varianza que tienen, por lo que parece intuitivo aplicar técnicas que permitan promediar métodos estadísticos para reducir la varianza manteniendo el sesgo bajo.
 
-La idea de \textit{Bagging} \cite{Breiman1996} es calcular $\hat{f}^1(x),\hat{f}^2(x),...,\hat{f}^B(x)$ usando B muestras \textit{bootstrap}\footnote{El bootstrap es un método de remuestreo que se utiliza para cuantificar la incertidumbre o reducir la varianza de un estimador. Consiste en generar múltiples muestras simuladas a partir de un único conjunto de datos mediante extracciones aleatorias con reemplazo. Al utilizar el reemplazo, cada nueva muestra mantiene el tamaño del conjunto original, pero altera la distribución al repetir ciertas observaciones y excluir otras.} y promediar las predicciones para reducir la varianza. Es decir
+La idea de \textit{Bagging} \cite{Breiman1996} es calcular $\hat{f}^1(x),\hat{f}^2(x),...,\hat{f}^B(x)$ usando B muestras \textit{bootstrap}\footnote{El bootstrap es un método de remuestreo que se utiliza para cuantificar la incertidumbre o reducir la varianza de un estimador. Consiste en generar múltiples muestras simuladas a partir de un único conjunto de datos mediante extracciones aleatorias con reemplazo. Al utilizar el reemplazo, cada nueva muestra mantiene el tamaño del conjunto original, pero altera la distribución al repetir ciertas observaciones y excluir otras.} del conjunto de observaciones $(X,Y)=\{(x_1,y_1),(x_2,y_2),...,(x_n,y_n)\}$, y promediar las predicciones para reducir la varianza. Es decir
 \begin{equation}
     \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
 \end{equation}
 
 La ventaja de utilizar \textit{Bagging} para predecir es que no hay que preocuparse por la profundidad de los árboles, dado que los árboles individuales tendrán muy poco sesgo y la varianza será reducida al tomar promedios. Además, si bien \textit{Bagging} puede utilizarse en múltiples métodos estadísticos, es particularmente útil para árboles de decisión dado que permite reducir la varianza sin aumentar el sesgo. Como se ve más formalmente a continuación, partiendo de las predicciones
-
-%#TODO: Descomposición del error? -> listo! quedó más explicíto
 
 \begin{equation}
     \hat{f}_{bag}(x)=\frac{1}{B}\sum_{b=1}^{B}\hat{f}^b(x)
@@ -64,7 +62,6 @@ Por lo tanto, cuando $B \to \infty$, el término $\frac{1}{B} \to 0$ y la varian
 P(\text{No ser seleccionado en una muestra}) = 1-\frac{1}{n}    
 \end{equation}
 
-%#TODO: b=n? -> Listo! creo que ahora esta mas claro. Validar si N=k=n es decir que cada muestra tiene que tener la misma cantidad de observaciones que la original, repitiendo algunas
 Luego, como se realizan $n$ extracciones con reemplazo, por lo que la probabilidad de no ser seleccionado en ninguna muestra es
 \begin{equation}
 P(\text{No ser seleccionado en ninguna muestra}) = \Bigg(1-\frac{1}{n}\Bigg)^{n}
@@ -101,7 +98,7 @@ Más formalmente se puede pensar el predictor \textit{Random Forest} como
 \hat{f}_{\text{rf}}(x)=\frac{1}{B}\sum_{b=1}^{B}T(x;\Theta_b)    
 \end{equation}
 
-Donde $( T(x; \Theta_b) )$ representa el valor predicho por el b-ésimo árbol de decisión para una observación $x$, construido a partir de una muestra \textit{bootstrap} y parámetros aleatorios $\Theta_b$.
+donde $( T(x; \Theta_b) )$ representa el valor predicho por el b-ésimo árbol de decisión para una observación $x$, construido a partir de una muestra \textit{bootstrap} y parámetros aleatorios $\Theta_b$.
 
 Es interesante notar que, si tomamos si $B\rightarrow\infty$, es decir cuando se promedian muchos árboles, por Ley de los Grandes Números se puede probar que:
 
@@ -120,7 +117,7 @@ Esto significa que, con suficientes árboles, la predicción de \textit{Random F
 
 \section{Boosting}
 %#TODO: el modelo se puede decir algo mas? en regresion es un modelo de regresion? -> No me queda claro que mas agregar
-A diferencia de \textit{Bagging}, \textit{Boosting} no promedia predicciones, sino que construye un modelo iterativamente, donde cada modelo se construye con el objetivo de corregir el error cometido por el modelo anterior. A continuación se presenta un ejemplo de cómo funciona el algoritmo de \textit{Gradient Boosting Machines} (\textit{GBM}) propuesto por \cite{friedman_2001}.
+A diferencia de \textit{Bagging}, \textit{Boosting} no promedia predicciones, sino que construye un modelo iterativamente, donde cada modelo se construye con el objetivo de corregir el error cometido por el modelo anterior. A continuación se presenta, para el caso de regresión, un ejemplo de cómo funciona el algoritmo de \textit{Gradient Boosting Machines} (\textit{GBM}) propuesto por \cite{friedman_2001}.
 
 Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\hat{f}(x)$ a partir de un conjunto de datos $(X,Y)$. En este caso, el conjunto de datos es una muestra i.i.d. de $(X,Y)$ de tamaño $n$:
 
@@ -128,7 +125,7 @@ Como en cualquier problema de aprendizaje supervisado, el objetivo es estimar $\
 (X,Y)=\{(x_1,y_1),(x_2,y_2),...,(x_n,y_n)\}
 \end{equation}
 
-Donde $x_i$ es un vector de covariables y $y_i$ es la variable de respuesta, en este caso, continua. Por lo que se trata de un problema de regresión.
+donde $x_i$ es un vector de covariables y $y_i$ es la variable de respuesta continua.
 
 El algoritmo de \textit{Gradient Boosting Machine} propone un método para encontrar un aproximación de la función $f(x)$ que minimiza una función de pérdida $L(y,f(x))$:
 
@@ -143,7 +140,6 @@ En definitiva, se ve que la forma de aproximar la función $f(x)$ es a través d
 \end{equation}
 
 \subsection{Algoritmo}
-%#TODO: El gradiente? - Listo! Creo que quedo mas claro
 El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos $(X,Y)$, una función de pérdida $L(y,f(x))$, un número de iteraciones $B$ y un modelo base $h(x,\theta)$. Con esto, el algoritmo es el siguiente:
 
 \begin{enumerate}
@@ -152,9 +148,9 @@ El algoritmo de \textit{Gradient Boosting Machine} requiere un conjunto de datos
     \begin{itemize}
         \item Calcular el negativo del gradiente de la función de pérdida para cada observación $i=1,...,n$:
         \begin{equation}
-        -g_{ib} = -\left[\frac{\partial L(y_i, f(x_i))}{\partial f(x_i)}\right]_{f=\hat{f}_{b-1}}
+        -g_{ib} = -\left[\frac{\partial L(y_i, f(x_i))}{\partial f(x_i)}\right]
         \end{equation}
-        \item Ajustar el modelo base $h_b(x,\theta_b)$ a los valores $-g_{ib}$. % <--- ¡Aquí está la corrección del signo!
+        \item Ajustar el modelo base $h_b(x,\theta_b)$ a los valores $-g_{ib}$.
         \item Encontrar el mejor tamaño de paso $\gamma_b$:
     \begin{equation}
     \gamma_b=\arg\min_{\gamma}\sum_{i=1}^{n}L\Big(y_i,\hat{f}_{b-1}(x_i)+\gamma h_b(x_i,\theta_b)\Big)    
@@ -186,7 +182,6 @@ Una de las ventajas que tienen este tipo de funciones de pérdida es que son dif
 &=-(y-f(x)) = f(x)-y \\
 \end{aligned}
 \end{equation}
-
 
 Luego, como el gradiente indica la dirección de máximo crecimiento, el negativo del gradiente indica la dirección de máximo decrecimiento. Lo cual es lo que se busca en el algoritmo de \textit{boosting}, es decir, minimizar la función de pérdida. Por lo que el negativo del gradiente evaluado para la observación $i$ en la iteración $b$ resulta ser:
 
@@ -248,7 +243,7 @@ En definitiva, el shrinkage puede incluirse $\hat{f}_b(x)$ como:
 \hat{f}_b(x)=\hat{f}_{b-1}(x)+\lambda\gamma_b h_b(x,\theta_b)    
 \end{equation}
 
-Donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$ para que el modelo llegue al mismo error.
+donde $\lambda$ es el \textit{shrinkage} que toma valores entre 0 y 1. Lógicamente, a medida que $\lambda$ se acerca a 0, los incrementos de las predicciones son cada vez más pequeños y por lo tanto el modelo es menos sensible a los errores de los árboles anteriores, alcanzando así una mejor generalización. Además, al elegir un \textit{shrinkage} pequeño, el modelo converge más lento, por lo cual se necesita un mayor número de iteraciones $B$ para que el modelo llegue al mismo error.
 
 En la \autoref{fig:gbm-shrinkage-effect} se puede ver el efecto del shrinkage en el error del modelo tanto en la muestra de entrenamiento como en la muestra de testeo. Puede verse que en la muestra de entrenamiento el error disminuye más rápido a medida que aumenta el shrinkage. Sin embargo, en la muestra de testeo puede verse como el \textit{shrinkage} afecta tanto la velocidad de convergencia como la capacidad de generalización del modelo.
 
