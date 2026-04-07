@@ -112,16 +112,8 @@ La \autoref{tbl:display-importances} presenta los 15 modelos con menor error. Se
     \end{tabular}
 \end{table}
 
-Sin embargo, cuando se calculan las importancias mediante PFI para estos modelos, surge un resultado preocupante. La \autoref{fig:line-plot-importances} muestra cómo las importancias varían considerablemente entre modelos con rendimiento similar. La \autoref{fig:heatmap-importances} refuerza esta observación: una misma variable puede ocupar el primer lugar de importancia en un modelo y el quinto o sexto en otro. Esta inconsistencia cuestiona la interpretabilidad de los resultados.
+Sin embargo, cuando se calculan las importancias mediante PFI para estos modelos, surge un resultado preocupante. La \autoref{fig:heatmap-importances} muestra cómo las importancias varían considerablemente entre modelos con rendimiento similar. En particular, se ve como una misma variable puede ocupar el cuarto lugar de importancia en un modelo y el séptimo en otro. Esta inconsistencia cuestiona la interpretabilidad de los resultados.
 
-\begin{figure}[ht!]
-    \centering
-    \includegraphics[width=1\textwidth]{images/capitulo_4/feature_importances.pdf}
-    \caption{Importancias de las variables para distintos modelos de \textit{Gradient Boosting} con rendimiento similar.}
-    \label{fig:line-plot-importances}
-\end{figure}
-
-%#TODO: Podria sacar esto? Creo que no se entiende mucho
 \begin{figure}[ht!]
     \centering
     \includegraphics[width=1\textwidth]{images/capitulo_4/importance_heatmap.pdf}
@@ -254,29 +246,3 @@ Como complemento a los gráficos centrados, \cite{Goldstein2015} proponen los gr
 \end{equation}
 
 En este caso, la derivada de $\hat{f}$ con respecto a $X_S$ depende únicamente de $X_S$ y es idéntica para todas las observaciones. Por lo tanto, si las curvas derivadas coinciden, no existen interacciones; si difieren, la relación entre $X_S$ y la predicción depende de los valores de otras variables. Esta herramienta es particularmente útil cuando las curvas ICE centradas son difíciles de interpretar visualmente debido a la cantidad de observaciones o a la complejidad de los patrones.
-
-\section{Extensiones}
-%#TODO: Debería sacar también la parte de la relación con el  proceso generador de los datos? Lo puedo mencionar en la conclusión y listo.
-Las técnicas de interpretación presentadas en las secciones anteriores permiten comprender cómo un modelo utiliza las variables para generar predicciones. Sin embargo, surgen naturalmente dos preguntas adicionales: ¿pueden estas técnicas informar sobre relaciones causales? y ¿qué relación tienen con el verdadero proceso generador de los datos? Esta sección aborda ambas cuestiones, explorando las condiciones bajo las cuales las técnicas de interpretación admiten una lectura causal y cómo se relacionan formalmente con las propiedades poblacionales.
-
-\subsection{Relación con el proceso generador de datos} 
-
-Una diferencia fundamental entre los modelos estadísticos tradicionales y los modelos de aprendizaje automático es la interpretabilidad de los parámetros. En un modelo de regresión lineal, los coeficientes tienen una interpretación directa en términos del proceso generador de datos (DGP) que permite realizar inferencia sobre propiedades poblacionales. Por otra parte, las técnicas presentadas en este capítulo (PFI, PDP, ICE) fueron diseñadas para extraer información de modelos de aprendizaje automático, pero no necesariamente existe relación con las verdaderas propiedades del DGP.
-
-\cite{freiesleben_2024} proponen un marco estadístico que formaliza esta conexión, introduciendo los conceptos de DGP-PD y DGP-PFI. Estas medidas representan los análogos poblacionales de las técnicas de interpretación, definidos en términos de la verdadera esperanza condicional $f(x)=E[Y|X=x]$:
-
-\begin{equation}
-\text{DGP-PD}(x_S)=E_{X_C}\left[f(x_S, X_C)\right]
-\end{equation}
-
-\begin{equation}
-\text{DGP-PFI} = E_{\bar{X}_S, X_C, Y}\left[L\left(Y, f(\bar{X}_S, X_C)\right)\right] - E_{X,Y}\left[L\left(Y, f(X)\right)\right]    
-\end{equation}
-
-donde $\bar{X}_S$ representa una copia independiente de $X_S$, utilizada para simular la permutación.
-
-Los autores descomponen el error de estimación de PDP y PFI en componentes de sesgo y varianza, identificando tres fuentes principales de error: (1) la aproximación de Monte Carlo al usar una muestra finita para calcular las esperanzas, (2) la posible especificación incorrecta del modelo (diferencia entre $\hat{f}$ y $f$), y (3) la variabilidad inherente al proceso de entrenamiento del modelo.
-
-Para cuantificar la incertidumbre debida a la variabilidad del entrenamiento, proponen la metodología \textit{learner-PD/PFI}, que consiste en promediar los resultados de interpretación obtenidos a partir de múltiples modelos reentrenados con diferentes semillas o submuestras. Este enfoque permite construir intervalos de confianza que reflejan la incertidumbre asociada al proceso de aprendizaje.
-
-No obstante, esta metodología tiene limitaciones. Asume que el modelo es aproximadamente insesgado, lo cual puede no cumplirse en la práctica. Además, cuando se utiliza \textit{bootstrap} para el reentrenamiento, el solapamiento entre las muestras puede generar intervalos de confianza demasiado estrechos. Finalmente, la dependencia entre variables complica la interpretación de las medidas, ya que tanto PDP como PFI asumen implícitamente independencia entre $X_S$ y $X_C$.
