@@ -7,7 +7,7 @@ Es por ello que se desarrollaron técnicas para extraer información de modelos 
 Con el acceso a información que se tiene actualmente, no es extraño querer incluir múltiples covariables en un mismo modelo. Sin embargo, entender cuáles de ellas realmente aportan al mismo no es trivial, por lo que se desarrollaron múltiples técnicas para evaluarlo. Esta sección presenta dos enfoques fundamentales: \textit{Split Gain Feature Importance} y \textit{Permutation Feature Importance}. Posteriormente, se analiza una limitación importante de estas técnicas (la inestabilidad de las importancias entre modelos con rendimiento similar) y se presenta \textit{Model Class Reliance} como una solución a este problema.
 
 \subsection{\textit{Split Gain Feature Importance}}
-%#TODO: cambiar b por n - Listo
+
 Esta técnica fue propuesta por \cite{friedman_2001} y asigna importancias en base a la reducción del error que cada variable genera al ser utilizada como criterio de división. Esta metodología es específica para árboles de decisión y se define formalmente para un solo árbol como:
  
 \begin{equation}
@@ -26,22 +26,23 @@ Cuando se trabaja con ensambles de árboles, la importancia se generaliza promed
 Esta medida presenta limitaciones importantes: está basada en heurísticas sin fundamentos estadísticos sólidos, \cite{strobl_2008} critica que otorga demasiada influencia a variables correlacionadas y favorece a variables categóricas con muchas categorías, dado que estas son propensas a generar más divisiones sin que esto implique una mayor contribución a la reducción del error.
 
 \subsection{\textit{Permutation Feature Importance}} 
-%#TODO: aclarar si se suma y cuantas permutaciones hay -> Listo!
-Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se elimina la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables menos importantes serán aquellas cuya permutación no genere un gran mayor incremento en el error dado que si el modelo no utilizó la variable durante el entrenamiento, el hecho de permutar las observaciones de dicha variable no debería afectar el error. Por otro lado, se espera que para variables poco importantes los errores se mantengan similares con y sin la permutación.
+
+Una alternativa es \textit{Permutation Feature Importance} (PFI), técnica desarrollada por \cite{breiman2001a} para \textit{Random Forest} y posteriormente generalizada para cualquier modelo por \cite{fischer_2019}. La intuición detrás de esta técnica es medir cómo cambia el error del modelo cuando se elimina la relación entre una variable y la respuesta mediante una permutación aleatoria. Las variables menos importantes serán aquellas cuya permutación no genere un mayor incremento en el error dado que si el modelo no utilizó la variable durante el entrenamiento, el hecho de permutar las observaciones de dicha variable no debería afectar el error. Por otro lado, se espera que para variables poco importantes los errores se mantengan similares con y sin la permutación.
 
 Este proceso se repite K veces para cada variable con el fin de reducir la varianza introducida por la aleatoriedad de la permutación. El valor final de importancia se obtiene promediando los resultados de estas iteraciones. El número de repeticiones K suele definirse buscando un equilibrio entre la estabilidad de la métrica y el costo computacional, el cual depende directamente del tamaño del conjunto de datos y la velocidad de inferencia del modelo.
 
-En el contexto de \textit{Random Forest}, habiendo entrenado un modelo $\hat{f}$, para cada covariable $j \in \{1,2,...,p\}$ se construye un nuevo conjunto de datos permutando las observaciones de dicha variable mientras se mantienen las demás fijas. Luego se calcula el error \textit{out-of-bag}:
+En el contexto de \textit{Random Forest}, se puede calcular la importancia de las variables como una medida de cuánto se modifica el error \textit{out-of-bag} (OOB) cuando se permuta una covariable. Más formalmente, para un modelo compuesto por $B$ árboles entrenados $f^1, f^2, \dots, f^B$, se calcula un nuevo error OOB permutando los valores de la covariable $j$, denotado como $E_{OOB}(X_{j'})$:
 
 \begin{equation}
-E_{OOB}(X_j) = \frac{1}{n} \sum_{i=1}^{n} \left( y_i -  \hat{f}_{OOB}(X_{i,j}) \right)^2    
+    E_{OOB}(X_{j'}) = \frac{1}{B} \sum_{b=1}^{B} \left( \frac{1}{|\mathcal{O}_b|} \sum_{i \in \mathcal{O}_b} \left( y_i - \hat{f}^b(X_{i,j'}) \right)^2 \right)
 \end{equation}
 
-donde $\hat{f}_{OOB}(X_{i,j})$ representa la predicción agregada para la observación i, calculada utilizando únicamente aquellos árboles en los que i no formó parte de la muestra de entrenamiento, evaluada sobre el conjunto de datos con la variable j permutada.
+donde $\mathcal{O}_b$ es el conjunto de observaciones OOB para el árbol $b$, y $X_{i,j'}$ representa la observación $i$ con su variable $j$ permutada.
 
-La importancia se obtiene comparando este error con el del modelo original:
+Luego, se obtiene la importancia final comparando este nuevo error con el error OOB del modelo original ($E_{OOB}$), ya sea mediante su diferencia o su cociente:
+
 \begin{equation}
-    PFI(j) = E_{OOB}(X_j) - E_{OOB}(X) ~~ \text{ó} ~~ PFI(j) = \frac{E_{OOB}(X_j)}{E_{OOB}(X)}
+    PFI(j) = E_{OOB}(X_{j'}) - E_{OOB} \quad \text{ó} \quad PFI(j) = \frac{E_{OOB}(X_{j'})}{E_{OOB}}
 \end{equation}
 
 \subsubsection{Generalización: \textit{Model Reliance}}

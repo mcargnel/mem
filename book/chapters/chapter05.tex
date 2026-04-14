@@ -8,25 +8,7 @@ Por último, se analiza la estabilidad de la importancia de variables (PFI) entr
 
 \section{\textit{Airfoil Self-Noise}}
 
-El primer conjunto de datos proviene de la NASA y describe pruebas aerodinámicas y acústicas realizadas en un túnel de viento sobre diferentes secciones de palas \cite{airfoil_self-noise_291}. El objetivo es predecir la presión sonora (\textit{scaled-sound-pressure}) a partir de características físicas y operativas. La muestra consta de 1503 observaciones completas (sin valores faltantes) que incluyen perfiles NACA 0012 de distintos tamaños sometidos a diversas velocidades y ángulos de ataque. Las variables disponibles se detallan en la \autoref{tbl:airfoil_variables}.
-
-\begin{table}[ht!]
-    \centering
-    \caption{Variables del conjunto de datos \textit{Airfoil Self-Noise} y su significado.}
-    \label{tbl:airfoil_variables}
-    \begin{tabular}{ll}
-    \hline
-    \textbf{Variable} & \textbf{Significado} \\
-    \hline
-    \textit{frequency} & Frecuencia\\
-    \textit{attack-angle} & Ángulo de ataque en grados \\
-    \textit{chord-length} & Longitud de cuerda en metros \\
-    \textit{free-stream-velocity} & Velocidad de flujo libre en metros por segundo \\
-    \textit{suction-side-displacement-thickness} & Espesor de desplazamiento del lado de succión en metros \\
-    \textit{scaled-sound-pressure} & Presión sonora en decibelios (var dep) \\
-    \hline
-    \end{tabular}
-\end{table}
+El primer conjunto de datos proviene de la NASA y describe pruebas aerodinámicas y acústicas realizadas en un túnel de viento sobre diferentes secciones de palas \cite{airfoil_self-noise_291}. El objetivo es predecir la presión sonora en decibelios (\textit{scaled-sound-pressure}) a partir de características físicas y operativas. La muestra consta de 1503 observaciones completas (sin valores faltantes) que incluyen perfiles NACA 0012 de distintos tamaños sometidos a diversas velocidades y ángulos de ataque. Las covariables disponibles son la frecuencia (\textit{frequency}), el ángulo de ataque en grados (\textit{attack-angle}), la longitud de cuerda en metros (\textit{chord-length}), la velocidad de flujo libre en metros por segundo (\textit{free-stream-velocity}) y el espesor de desplazamiento del lado de succión en metros (\textit{suction-side-displacement-thickness}).
 
 El análisis de correlación inicial (\autoref{fig:airfoil-correlation}) reveló una fuerte asociación entre el espesor de desplazamiento (\textit{suction-side-displacement-thickness}) y el ángulo de ataque (\textit{attack-angle}). Dado que este último también presentaba una correlación considerable con la longitud de cuerda (\textit{chord-length}) pero menor influencia lineal sobre la variable objetivo, se optó por excluirlo del modelado para reducir la multicolinealidad.
 
@@ -126,6 +108,7 @@ Al evaluar el rendimiento predictivo en el conjunto de prueba (\autoref{tbl:conc
     \textit{Gradient Boosting}&4.3500&2.8629&0.9266 \\
     \hline
     \end{tabular}
+    
 \end{table}
 
 En cuanto a la interpretabilidad, el análisis de importancia de variables (\autoref{fig:concrete_permutation_importance}) identifica a la Edad y la Cantidad de Cemento como los factores más influyentes en la resistencia del concreto. Esta conclusión es consistente entre los cinco mejores modelos ajustados (\autoref{tbl:imp_concrete_strength}).
